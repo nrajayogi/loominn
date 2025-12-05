@@ -1,7 +1,5 @@
 "use client";
 
-import StatusMenu from "../ui/StatusMenu";
-
 import { Home, LayoutGrid, Plus, User, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,8 +9,8 @@ import { useState } from "react";
 const NAV_ITEMS = [
     { icon: Home, label: "Home", href: "/" },
     { icon: LayoutGrid, label: "Projects", href: "/projects" },
-    { icon: Zap, label: "Feed", href: "/feed" },
     { icon: Plus, label: "Create", href: "/projects/create", highlight: true },
+    { icon: Zap, label: "Feed", href: "/feed" },
     { icon: User, label: "Profile", href: "/profile" },
 ];
 
@@ -31,18 +29,6 @@ export default function Dock() {
                 {NAV_ITEMS.map((item, index) => {
                     const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                     const isHovered = hoveredIndex === index;
-
-                    if (item.label === "Profile") {
-                        return (
-                            <motion.div
-                                key={item.href}
-                                onHoverStart={() => setHoveredIndex(index)}
-                                onHoverEnd={() => setHoveredIndex(null)}
-                            >
-                                <StatusMenu isActive={isActive} isHovered={isHovered} />
-                            </motion.div>
-                        );
-                    }
 
                     return (
                         <Link key={item.href} href={item.href}>

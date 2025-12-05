@@ -1,8 +1,6 @@
-"use client";
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, UserPlus, CheckCircle2, Star, Clock, AlertCircle } from "lucide-react";
+import { Bell, UserPlus, CheckCircle2, Star, Clock, AlertCircle, Zap, Moon, Coffee, Palette } from "lucide-react";
 
 type NotificationType = "request" | "approval" | "update" | "points";
 
@@ -61,13 +59,19 @@ const UPDATES_DATA: Notification[] = [
     }
 ];
 
+const STATUS_OPTIONS = [
+    { id: "online", label: "Online", color: "bg-green-500", icon: Zap },
+    { id: "busy", label: "Busy", color: "bg-red-500", icon: Moon },
+    { id: "vacation", label: "Vacation", color: "bg-orange-500", icon: Coffee },
+    { id: "creative", label: "Creative", color: "bg-purple-500", icon: Palette },
+];
+
 export default function Notifications() {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"inbox" | "updates">("inbox");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [inbox] = useState(INBOX_DATA);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [updates] = useState(UPDATES_DATA);
+    const [currentStatus, setCurrentStatus] = useState(STATUS_OPTIONS[0]);
 
     const activeList = activeTab === "inbox" ? inbox : updates;
     const unreadCount = inbox.filter(n => !n.read).length + updates.filter(n => !n.read).length;
@@ -88,9 +92,12 @@ export default function Notifications() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="relative w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors shadow-xl"
             >
-                <Bell size={20} />
+                <div className="relative">
+                    <Bell size={20} />
+                    <div className={`absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-zinc-900 ${currentStatus.color}`} />
+                </div>
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center border-2 border-black">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center border-2 border-black z-10">
                         {unreadCount}
                     </span>
                 )}
@@ -108,6 +115,36 @@ export default function Notifications() {
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             className="absolute top-14 right-0 w-80 md:w-96 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                         >
+                            {/* Status Section */}
+                            <div className="p-3 border-b border-white/5 bg-white/5">
+                                <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 px-1">
+                                    Set Status
+                                </div>
+                                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                                    {STATUS_OPTIONS.map((status) => {
+                                        const Icon = status.icon;
+                                        const isSelected = currentStatus.id === status.id;
+                                        return (
+                                            <button
+                                                key={status.id}
+                                                onClick={() => setCurrentStatus(status)}
+                                                className={`
+                                                    flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all whitespace-nowrap
+                                                    ${isSelected
+                                                        ? 'bg-white/10 border-white/20 text-white shadow-sm'
+                                                        : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
+                                                    }
+                                                `}
+                                            >
+                                                <div className={`w-1.5 h-1.5 rounded-full ${status.color}`} />
+                                                <Icon size={12} />
+                                                {status.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Header Tabs */}
                             <div className="flex border-b border-white/5">
                                 <button
@@ -129,7 +166,7 @@ export default function Notifications() {
                             </div>
 
                             {/* List */}
-                            <div className="max-h-[60vh] overflow-y-auto">
+                            <div className="max-h-[50vh] overflow-y-auto">
                                 {activeList.length === 0 ? (
                                     <div className="text-center py-12 text-zinc-500 text-sm">
                                         No new notifications
