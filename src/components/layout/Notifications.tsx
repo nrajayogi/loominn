@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, UserPlus, CheckCircle2, Star, Clock, AlertCircle, Zap, Moon, Coffee, Palette } from "lucide-react";
