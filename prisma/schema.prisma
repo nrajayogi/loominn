@@ -29,6 +29,8 @@ model User {
   // Actually Explicit Many-to-Many is better for status.
   sentConnections     Connection[]  @relation("Sender")
   receivedConnections Connection[]  @relation("Receiver")
+  
+  stories       Story[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -103,4 +105,16 @@ model Connection {
   createdAt DateTime @default(now())
 
   @@unique([senderId, receiverId])
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  image     String   // URL to image or gradient background
+  type      String   @default("image") // "image" | "text"
+  content   String?  // Optional text overlay
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
 }

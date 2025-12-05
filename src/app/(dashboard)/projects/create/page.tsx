@@ -1,19 +1,53 @@
 "use client";
 
-import { useState } from "react";
-import { PenTool, Layout, Image as ImageIcon, Send, Rocket, Sparkles, FolderPlus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { PenTool, Layout, Image as ImageIcon, Send, Rocket, Sparkles, FolderPlus, FileText, ChevronRight } from "lucide-react";
 import ProjectWizard from "@/components/projects/ProjectWizard";
+import { useGlobalState } from "@/context/GlobalStateContext";
 
 export default function CreativeStudio() {
+    const { addPost } = useGlobalState();
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [draftContent, setDraftContent] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const handlePost = () => {
+        if (!draftContent.trim() || isUploading) return;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        // Simulate network upload
+        const interval = setInterval(() => {
+            setUploadProgress(prev => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    completePost();
+                    return 100;
+                }
+                // Randomize increment for realism
+                return prev + Math.random() * 10;
+            });
+        }, 200);
+    };
+
+    const completePost = async () => {
+        // Small delay at 100% for visual satisfaction
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        addPost(draftContent);
+        setDraftContent("");
+        setIsUploading(false);
+        setUploadProgress(0);
+    };
 
     if (isWizardOpen) {
         return <ProjectWizard onCancel={() => setIsWizardOpen(false)} />;
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8 relative">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-4xl font-bold text-white mb-2">Creative Studio</h1>
@@ -50,10 +84,17 @@ export default function CreativeStudio() {
                                     <ImageIcon size={18} />
                                 </button>
                                 <button
-                                    disabled={!draftContent.trim()}
+                                    onClick={handlePost}
+                                    disabled={!draftContent.trim() || isUploading}
                                     className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all"
                                 >
-                                    <Send size={16} /> Post
+                                    {isUploading ? (
+                                        <span className="flex items-center gap-2">Uploading...</span>
+                                    ) : (
+                                        <>
+                                            <Send size={16} /> Post
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -114,14 +155,45 @@ export default function CreativeStudio() {
                     </div>
                 </div>
             </div>
+
+            {/* Circular Progress Overlay (Bottom Right Notification Area) */}
+            {isUploading && (
+                <div className="fixed bottom-24 right-6 bg-zinc-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10 fade-in duration-300 z-50">
+                    <div className="relative h-12 w-12 flex items-center justify-center">
+                        {/* SVG Circle Progress */}
+                        <svg className="transform -rotate-90 w-12 h-12">
+                            <circle
+                                cx="24"
+                                cy="24"
+                                r="20"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                fill="transparent"
+                                className="text-zinc-800"
+                            />
+                            <circle
+                                cx="24"
+                                cy="24"
+                                r="20"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                fill="transparent"
+                                strokeDasharray={126} // 2 * pi * 20
+                                strokeDashoffset={126 - (126 * Math.min(uploadProgress, 100)) / 100}
+                                className="text-purple-500 transition-all duration-300 ease-out"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                        <span className="absolute text-[10px] font-bold text-white">
+                            {Math.round(Math.min(uploadProgress, 100))}%
+                        </span>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-white">Publishing...</h4>
+                        <p className="text-xs text-zinc-400">Uploading to public feed</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
-}
-
-function ChevronRight({ size }: { size?: number }) {
-    return <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-}
-
-function FileText({ size }: { size?: number }) {
-    return <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
 }

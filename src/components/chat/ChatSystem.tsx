@@ -3,13 +3,17 @@
 import { useState } from "react";
 import { MessageCircle, X, Hash, User, Send, ChevronRight, MoreVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 type ChatTab = "projects" | "messages";
 
 export default function ChatSystem() {
+    const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<ChatTab>("messages");
     const [activeConversation, setActiveConversation] = useState<number | null>(null);
+
+    if (!session) return null;
 
     return (
         <>

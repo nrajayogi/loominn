@@ -1,9 +1,13 @@
 "use client";
 
 import { ProjectCard } from "@/components/ui/ProjectCard";
-import { Filter, Plus, Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useGlobalState } from "@/context/GlobalStateContext";
+import { useSession } from "next-auth/react";
+import StoriesRail from "@/components/feed/StoriesRail";
+import SuggestionNet from "@/components/feed/SuggestionNet";
 
 const PROJECTS = [
     {
@@ -39,9 +43,26 @@ const PROJECTS = [
 ];
 
 export default function FeedPage() {
+    const { data: session } = useSession();
+    const { userProfile, posts } = useGlobalState();
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredProjects = PROJECTS.filter(project =>
+    // Convert global posts to "ProjectCard" format to unify the feed
+    const globalPostsAsProjects = posts.map(post => ({
+        id: post.id,
+        title: `Update from ${userProfile.name}`, // Generic title for social posts
+        description: post.content,
+        author: userProfile.name,
+        image: userProfile.image || "",
+        votes: post.likes,
+        comments: post.comments,
+        tags: ["Social", "Update"]
+    }));
+
+    // Combine static network projects with global user posts
+    const combinedFeed = [...globalPostsAsProjects, ...PROJECTS];
+
+    const filteredProjects = combinedFeed.filter(project =>
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -51,24 +72,26 @@ export default function FeedPage() {
         <div className="max-w-2xl mx-auto space-y-6 pb-20">
             {/* Header */}
             <div className="flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur-xl p-4 -mx-4 z-40 border-b border-white/5">
-                <h1 className="text-xl font-bold text-white">Home</h1>
+                <h1 className="text-xl font-bold text-white">Network Feed</h1>
                 <Link href="/profile">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-black cursor-pointer hover:scale-105 transition-transform" aria-label="Profile">
-                        RN
+                    <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-white/10" aria-label="Profile">
+                        {userProfile.image || session?.user?.image ? (
+                            <img src={userProfile.image || session?.user?.image || ""} alt={userProfile.name} className="w-full h-full object-cover" />
+                        ) : (
+                            "RN"
+                        )}
                     </div>
                 </Link>
             </div>
 
-            {/* Stories / Quick Actions Placeholder */}
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-zinc-800 border-2 border-blue-500 flex items-center justify-center text-blue-500">
-                    <Plus size={24} />
-                </div>
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex-shrink-0 w-16 h-16 rounded-full bg-zinc-800 border-2 border-zinc-700 p-0.5">
-                        <div className="w-full h-full rounded-full bg-zinc-700"></div>
-                    </div>
-                ))}
+            {/* Briefs Rail */}
+            <div className="-mx-4 px-4 bg-zinc-950/30 py-4 mb-4 border-b border-white/5">
+                <StoriesRail />
+            </div>
+
+            {/* Creative Connection Discovery */}
+            <div className="mb-2">
+                <SuggestionNet />
             </div>
 
             {/* Search & Filter */}
@@ -77,7 +100,7 @@ export default function FeedPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
                     <input
                         type="text"
-                        placeholder="Search projects..."
+                        placeholder="Search updates..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
@@ -104,7 +127,7 @@ export default function FeedPage() {
                 ))}
                 {filteredProjects.length === 0 && (
                     <div className="text-center py-12 text-zinc-500">
-                        No projects found matching "{searchQuery}"
+                        No updates found matching "{searchQuery}"
                     </div>
                 )}
             </div>

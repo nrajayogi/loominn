@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, UserPlus, CheckCircle2, Star, Clock, AlertCircle, Zap, Moon, Coffee, Palette } from "lucide-react";
+import { Bell, UserPlus, CheckCircle2, Star, Clock, AlertCircle, Zap, Moon, Coffee, Palette, MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 type NotificationType = "request" | "approval" | "update" | "points";
 
@@ -68,17 +69,23 @@ const STATUS_OPTIONS = [
     { id: "creative", label: "Creative", color: "bg-purple-500", icon: Palette },
 ];
 
+import { useSession } from "next-auth/react";
+
 export default function Notifications() {
+    const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<"inbox" | "updates">("inbox");
     const [inbox] = useState(INBOX_DATA);
     const [updates] = useState(UPDATES_DATA);
     const [currentStatus, setCurrentStatus] = useState(STATUS_OPTIONS[0]);
 
+    if (!session) return null;
+
     const activeList = activeTab === "inbox" ? inbox : updates;
     const unreadCount = inbox.filter(n => !n.read).length + updates.filter(n => !n.read).length;
 
     const getIcon = (type: NotificationType) => {
+        // ... switch case ...
         switch (type) {
             case "request": return <UserPlus size={18} className="text-blue-500" />;
             case "approval": return <Clock size={18} className="text-orange-500" />;
@@ -89,17 +96,18 @@ export default function Notifications() {
     };
 
     return (
-        <div className="fixed top-6 right-6 z-50">
+        <div className="fixed bottom-6 right-24 z-50 flex items-center gap-3">
+            {/* Notifications Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors shadow-xl"
+                className="relative w-14 h-14 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors shadow-2xl"
             >
                 <div className="relative">
-                    <Bell size={20} />
-                    <div className={`absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-zinc-900 ${currentStatus.color}`} />
+                    <Bell size={24} />
+                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-zinc-900 ${currentStatus.color}`} />
                 </div>
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center border-2 border-black z-10">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-xs font-bold text-white flex items-center justify-center border-2 border-black z-10">
                         {unreadCount}
                     </span>
                 )}
@@ -115,7 +123,7 @@ export default function Notifications() {
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            className="absolute top-14 right-0 w-80 md:w-96 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                            className="absolute bottom-20 right-0 w-80 md:w-96 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                         >
                             {/* Status Section */}
                             <div className="p-3 border-b border-white/5 bg-white/5">

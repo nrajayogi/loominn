@@ -1,6 +1,6 @@
 
 import NextAuth from "next-auth"
-import { authConfig } from "@/auth.config"
+import { authConfig } from "@/security/auth.config"
 
 const { auth } = NextAuth(authConfig)
 
@@ -9,7 +9,11 @@ export default auth((req) => {
     const isAuthPage = req.nextUrl.pathname.startsWith('/login')
     const isPublicPage = req.nextUrl.pathname === '/'
 
-    if (!isLoggedIn && !isAuthPage && !isPublicPage) {
+    if (isPublicPage) {
+        return
+    }
+
+    if (!isLoggedIn && !isAuthPage) {
         return Response.redirect(new URL('/login', req.nextUrl))
     }
 
@@ -19,5 +23,5 @@ export default auth((req) => {
 })
 
 export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
 }

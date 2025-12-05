@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const REACTIONS = [
     { id: "love", emoji: "❤️", label: "Love" },
@@ -16,8 +18,15 @@ export default function ReactionButton({ initialCount }: { initialCount: number 
     const [count, setCount] = useState(initialCount);
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const { data: session } = useSession();
+    const router = useRouter();
 
     const handleReaction = (reaction: string) => {
+        if (!session) {
+            router.push("/login");
+            return;
+        }
+
         if (selectedReaction === reaction) {
             setSelectedReaction(null);
             setCount(c => c - 1);
