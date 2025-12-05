@@ -1,6 +1,6 @@
 "use client";
 
-import { Share2, MoreHorizontal, Heart, Award, Image, Link as LinkIcon, MessageSquare } from "lucide-react";
+import { Share2, MoreHorizontal, Heart, Award, Image, Link as LinkIcon, MessageSquare, Camera } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -48,9 +48,16 @@ export default function ProfilePage() {
     return (
         <div className="space-y-8 pb-20">
             {/* Hero Section */}
-            <div className="relative h-64 md:h-80 rounded-3xl overflow-hidden group">
+            <div className="relative h-64 md:h-80 overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-80 group-hover:scale-105 transition-transform duration-700"></div>
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay"></div>
+
+                {/* Edit Cover Button */}
+                <button className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-colors border border-white/10 opacity-0 group-hover:opacity-100">
+                    <Camera size={16} />
+                    Edit Cover
+                </button>
+
                 <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent flex items-end">
                     <div className="flex items-end gap-6">
                         <div className="h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-black bg-zinc-800 flex items-center justify-center text-zinc-400 text-3xl font-bold relative z-10 shadow-2xl">
@@ -69,7 +76,7 @@ export default function ProfilePage() {
                 {/* Stats Column */}
                 <div className="space-y-6">
                     {/* Skill Mastery Card (New) */}
-                    <div className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden group">
+                    <div className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-xl relative overflow-hidden group">
                         <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full group-hover:bg-blue-500/30 transition-colors"></div>
                         <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
                             <Award className="text-yellow-500" /> Skill Mastery
@@ -101,29 +108,29 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 backdrop-blur-xl">
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
                         <h2 className="text-xl font-bold text-white mb-4">Stats</h2>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-2xl bg-white/5 text-center">
+                            <div className="p-4 rounded-xl bg-white/5 text-center">
                                 <div className="text-2xl font-bold text-white">12</div>
                                 <div className="text-xs text-zinc-500">Projects</div>
                             </div>
-                            <div className="p-4 rounded-2xl bg-white/5 text-center">
+                            <div className="p-4 rounded-xl bg-white/5 text-center">
                                 <div className="text-2xl font-bold text-white">1.2k</div>
                                 <div className="text-xs text-zinc-500">Followers</div>
                             </div>
-                            <div className="p-4 rounded-2xl bg-white/5 text-center">
+                            <div className="p-4 rounded-xl bg-white/5 text-center">
                                 <div className="text-2xl font-bold text-white">450</div>
                                 <div className="text-xs text-zinc-500">Following</div>
                             </div>
-                            <div className="p-4 rounded-2xl bg-white/5 text-center">
+                            <div className="p-4 rounded-xl bg-white/5 text-center">
                                 <div className="text-2xl font-bold text-white">89</div>
                                 <div className="text-xs text-zinc-500">Reputation</div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 backdrop-blur-xl">
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
                         <h2 className="text-xl font-bold text-white mb-4">Skills</h2>
                         <div className="flex flex-wrap gap-2">
                             {["React", "Next.js", "TypeScript", "Tailwind", "Node.js", "Python", "UI Design"].map((skill) => (
@@ -161,7 +168,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 {USER_PROJECTS.map((project) => (
-                                    <div key={project.id} className="group relative bg-zinc-900/50 border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-900/20">
+                                    <div key={project.id} className="group relative bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-900/20">
                                         <div className={`h-48 bg-gradient-to-br ${project.color} relative overflow-hidden`}>
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
                                             <div className="absolute top-4 right-4 flex gap-2">
@@ -205,7 +212,7 @@ export default function ProfilePage() {
                     {activeTab === "Posts" && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Create Post Input */}
-                            <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
+                            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6">
                                 <div className="flex gap-4">
                                     <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold">RN</div>
                                     <div className="flex-1">
@@ -236,7 +243,7 @@ export default function ProfilePage() {
 
                             {/* Timeline Posts */}
                             {posts.map((post) => (
-                                <div key={post.id} className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <div key={post.id} className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 animate-in fade-in slide-in-from-top-4 duration-300">
                                     <div className="flex gap-4 mb-4">
                                         <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 font-bold">RN</div>
                                         <div>

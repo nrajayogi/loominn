@@ -10,7 +10,7 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="glass rounded-3xl p-8 shadow-2xl"
+            className="glass rounded-2xl p-8 shadow-2xl"
         >
             <div className="text-center mb-8">
                 <div className="h-12 w-12 rounded-xl bg-primary mx-auto flex items-center justify-center mb-4 shadow-lg shadow-primary/25">

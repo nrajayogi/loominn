@@ -10,7 +10,7 @@ export default function SignupPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="glass rounded-3xl p-8 shadow-2xl"
+            className="glass rounded-2xl p-8 shadow-2xl"
         >
             <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-white mb-2">Create Account</h2>

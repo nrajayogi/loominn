@@ -25,7 +25,7 @@ export default function ApplicationStatusPage() {
             </div>
 
             {/* Status Card */}
-            <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8 relative overflow-hidden">
+            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-32 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none"></div>
 
                 <div className="flex items-start gap-6 mb-12 relative z-10">
@@ -65,8 +65,8 @@ export default function ApplicationStatusPage() {
                             return (
                                 <div key={step.id} className="flex flex-col items-center gap-4 bg-background px-4">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${isCompleted ? 'bg-blue-600 border-blue-600 text-white' :
-                                            isCurrent ? 'bg-zinc-900 border-blue-600 text-blue-500 scale-110 shadow-[0_0_20px_rgba(37,99,235,0.3)]' :
-                                                'bg-zinc-900 border-zinc-800 text-zinc-600'
+                                        isCurrent ? 'bg-zinc-900 border-blue-600 text-blue-500 scale-110 shadow-[0_0_20px_rgba(37,99,235,0.3)]' :
+                                            'bg-zinc-900 border-zinc-800 text-zinc-600'
                                         }`}>
                                         <Icon size={20} />
                                     </div>

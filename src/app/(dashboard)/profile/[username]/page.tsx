@@ -7,7 +7,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
     return (
         <div>
             {/* Cover Image */}
-            <div className="h-64 rounded-3xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-accent/20 relative overflow-hidden mb-20">
+            <div className="h-64 rounded-2xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-accent/20 relative overflow-hidden mb-20">
                 <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
             </div>
 

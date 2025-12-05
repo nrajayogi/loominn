@@ -10,7 +10,7 @@ export default function DashboardLayout({
         <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
             <Notifications />
             <Dock />
-            <main className="pb-32 pt-8">
+            <main className="pb-32 pt-8 max-w-[1600px] mx-auto px-4 md:px-6">
                 {children}
             </main>
         </div>

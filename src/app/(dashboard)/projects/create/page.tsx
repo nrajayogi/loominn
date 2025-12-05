@@ -13,13 +13,6 @@ const STEPS = [
 
 export default function ProjectCreationWizard() {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        category: "Development",
-        members: [],
-        phases: []
-    });
 
     const nextStep = () => setStep(s => Math.min(s + 1, 4));
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -54,7 +47,7 @@ export default function ProjectCreationWizard() {
             </div>
 
             {/* Step Content */}
-            <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8 mb-8 min-h-[400px]">
+            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 mb-8 min-h-[400px]">
                 {step === 1 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <h2 className="text-xl font-bold text-white mb-4">Project Basics</h2>
