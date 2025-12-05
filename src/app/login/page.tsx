@@ -36,9 +36,14 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md space-y-8"
             >
-                <div className="text-center space-y-2">
-                    <h1 className="text-4xl font-bold text-white tracking-tighter">Loominn</h1>
-                    <p className="text-zinc-500">The Creative Network for Professionals</p>
+                <div className="flex flex-col items-center space-y-4 mb-2">
+                    <div className="w-24 h-24 bg-gradient-to-tr from-purple-500/20 to-orange-500/20 rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl backdrop-blur-sm">
+                        <img src="/logo.png" alt="Loominn" className="w-16 h-16 object-contain" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-bold text-center text-white tracking-tighter mb-1">Loominn</h1>
+                        <p className="text-zinc-500 text-center">The Creative Network for Professionals</p>
+                    </div>
                 </div>
 
                 <div className="bg-zinc-900/50 border border-white/5 p-8 rounded-3xl space-y-6 backdrop-blur-xl">
