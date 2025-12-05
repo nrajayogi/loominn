@@ -24,7 +24,7 @@ const navItems = [
     { icon: Compass, label: "Explore", href: "/explore" },
     { icon: Briefcase, label: "Projects", href: "/projects" },
     { icon: Tv, label: "Channels", href: "/channels" },
-    { icon: Users, label: "Social", href: "/social" },
+    { icon: Users, label: "Partners", href: "/network" },
     { icon: Bookmark, label: "Bookmarks", href: "/bookmarks" },
     { icon: Clock, label: "History", href: "/history" },
 ];

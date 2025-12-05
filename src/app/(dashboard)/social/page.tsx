@@ -60,9 +60,9 @@ export default function SocialPage() {
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-white flex items-center gap-2">
                             <UserPlus size={18} className="text-blue-500" />
-                            People you might like
+                            People you might want to partner with
                         </h3>
-                        <button className="text-zinc-500 hover:text-white transition-colors">
+                        <button className="text-zinc-500 hover:text-white transition-colors" title="Refresh Suggestions">
                             <RefreshCw size={16} />
                         </button>
                     </div>
@@ -82,7 +82,7 @@ export default function SocialPage() {
                                 <div className="flex items-center gap-2">
                                     <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
                                         <UserPlus size={14} />
-                                        Follow
+                                        Partner
                                     </button>
                                     <button className="text-zinc-500 hover:text-white px-2" aria-label="Dismiss">×</button>
                                 </div>
@@ -102,7 +102,7 @@ export default function SocialPage() {
                                     <Users size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-zinc-400">Followers</p>
+                                    <p className="text-sm font-medium text-zinc-400">Partners</p>
                                     <p className="text-xl font-bold text-white">3</p>
                                 </div>
                             </div>
@@ -111,7 +111,7 @@ export default function SocialPage() {
                                     <UserPlus size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-zinc-400">Following</p>
+                                    <p className="text-sm font-medium text-zinc-400">Pending</p>
                                     <p className="text-xl font-bold text-white">3</p>
                                 </div>
                             </div>
@@ -138,7 +138,7 @@ export default function SocialPage() {
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <button className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-[10px] font-medium transition-colors">
-                                            Follow
+                                            Partner
                                         </button>
                                         <button className="text-zinc-500 hover:text-white px-1" aria-label="Dismiss">×</button>
                                     </div>

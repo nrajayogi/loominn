@@ -105,17 +105,6 @@ export default function Home() {
         </div>
       </Link>
 
-      {/* Stories Rail */}
-      <section className="pt-24 px-4 md:px-8 max-w-7xl mx-auto z-40 relative">
-        <StoriesRail />
-      </section>
-
-      {/* Ambient Background */}
-      <div className="fixed inset-0 pointer-events-none z-[-1]">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-900/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "2s" }} />
-      </div>
-
       {/* Project Spotlight (The USP) */}
       <section className="relative h-[60vh] w-full rounded-none overflow-hidden group cursor-pointer">
         <div className="absolute inset-0 bg-black/20 z-10 group-hover:bg-black/10 transition-colors duration-500" />
@@ -171,6 +160,11 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
+      </section>
+
+      {/* Stories Rail */}
+      <section className="px-4 md:px-8 max-w-7xl mx-auto z-40 relative">
+        <StoriesRail />
       </section>
 
       {/* Mosaic Feed */}

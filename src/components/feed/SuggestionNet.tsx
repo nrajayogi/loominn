@@ -64,11 +64,11 @@ export default function SuggestionNet() {
                             }}
                             disabled={connected.includes(user.id)}
                             className={`w-full py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${connected.includes(user.id)
-                                    ? "bg-green-500/10 text-green-500 border border-green-500/20"
-                                    : "bg-white/10 hover:bg-white/20 text-white"
+                                ? "bg-green-500/10 text-green-500 border border-green-500/20"
+                                : "bg-white/10 hover:bg-white/20 text-white"
                                 }`}
                         >
-                            {connected.includes(user.id) ? "Linked" : <><UserPlus size={12} /> Connect</>}
+                            {connected.includes(user.id) ? "Partnered" : <><UserPlus size={12} /> Partner</>}
                         </button>
                     </motion.div>
                 ))}
