@@ -1,27 +1,19 @@
 
 import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-import Facebook from "next-auth/providers/facebook"
-import Apple from "next-auth/providers/apple"
-import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/db"
+import { authConfig } from "./auth.config"
+import Credentials from "next-auth/providers/credentials"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     adapter: PrismaAdapter(prisma),
     providers: [
-        Google({
-            clientId: process.env.AUTH_GOOGLE_ID,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET,
-        }),
-        Facebook({
-            clientId: process.env.AUTH_FACEBOOK_ID,
-            clientSecret: process.env.AUTH_FACEBOOK_SECRET,
-        }),
-        Apple({
-            clientId: process.env.AUTH_APPLE_ID,
-            clientSecret: process.env.AUTH_APPLE_SECRET,
-        }),
+        // Re-declare providers to ensure they are loaded (NextAuth sometimes needs this)
+        // OR better: spread them. existing providers are fine.
+        ...authConfig.providers.filter(p => p.id !== "credentials"), // Remove mock credentials
+
+        // Add Full Credentials Provider with DB Access
         Credentials({
             name: "Test Login",
             credentials: {
@@ -49,16 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
         }),
     ],
-    callbacks: {
-        async session({ session, user }) {
-            // Add ID to session
-            if (session.user && user) {
-                session.user.id = user.id;
-            }
-            return session;
-        }
+    session: {
+        strategy: "jwt"
     },
-    pages: {
-        signIn: '/login', // Custom login page
-    }
 })
