@@ -1,8 +1,15 @@
-import { MapPin, Link as LinkIcon, Calendar } from "lucide-react";
+import { MapPin, Link as LinkIcon, Calendar, UserPlus, Clock, Check, MessageSquare } from "lucide-react";
 import { ProjectCard } from "@/components/ui/ProjectCard";
+import { useState } from "react";
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
     const username = params.username === "me" ? "Rajayogi" : params.username;
+    const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "connected">("none");
+
+    const handleConnect = () => {
+        if (connectionStatus === "none") setConnectionStatus("pending");
+        else setConnectionStatus("none");
+    };
 
     return (
         <div>
@@ -41,11 +48,21 @@ export default function ProfilePage({ params }: { params: { username: string } }
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <button className="px-6 py-2.5 rounded-xl bg-white text-black font-bold hover:bg-zinc-200 transition-colors">
-                            Follow
+                        <button
+                            onClick={handleConnect}
+                            className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${connectionStatus === "none"
+                                    ? "bg-white text-black hover:bg-zinc-200"
+                                    : connectionStatus === "pending"
+                                        ? "bg-zinc-800 text-zinc-400 border border-zinc-700"
+                                        : "bg-green-600 text-white border border-green-500"
+                                }`}
+                        >
+                            {connectionStatus === "none" && <><UserPlus size={18} /> Connect</>}
+                            {connectionStatus === "pending" && <><Clock size={18} /> Pending</>}
+                            {connectionStatus === "connected" && <><Check size={18} /> Connected</>}
                         </button>
-                        <button className="px-6 py-2.5 rounded-xl bg-card border border-border text-white font-medium hover:bg-zinc-800 transition-colors">
-                            Message
+                        <button className="px-6 py-2.5 rounded-xl bg-card border border-border text-white font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
+                            <MessageSquare size={18} /> Message
                         </button>
                     </div>
                 </div>

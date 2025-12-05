@@ -1,214 +1,127 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, ChevronLeft, Check, Users, Calendar, FileText, Shield, Award } from "lucide-react";
-import Link from "next/link";
+import { PenTool, Layout, Image as ImageIcon, Send, Rocket, Sparkles, FolderPlus } from "lucide-react";
+import ProjectWizard from "@/components/projects/ProjectWizard";
 
-const STEPS = [
-    { id: 1, label: "Basics", icon: FileText },
-    { id: 2, label: "Team", icon: Users },
-    { id: 3, label: "Timeline", icon: Calendar },
-    { id: 4, label: "Verification", icon: Shield },
-];
+export default function CreativeStudio() {
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [draftContent, setDraftContent] = useState("");
 
-export default function ProjectCreationWizard() {
-    const [step, setStep] = useState(1);
-
-    const nextStep = () => setStep(s => Math.min(s + 1, 4));
-    const prevStep = () => setStep(s => Math.max(s - 1, 1));
+    if (isWizardOpen) {
+        return <ProjectWizard onCancel={() => setIsWizardOpen(false)} />;
+    }
 
     return (
-        <div className="max-w-4xl mx-auto pb-20">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">Create New Project</h1>
-                <p className="text-zinc-400">Set up your project, assemble your team, and plan your timeline.</p>
-            </div>
-
-            {/* Progress Steps */}
-            <div className="flex items-center justify-between mb-12 relative">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 -z-10"></div>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 -z-10 transition-all duration-500" style={{ width: `${((step - 1) / 3) * 100}%` }}></div>
-
-                {STEPS.map((s) => {
-                    const Icon = s.icon;
-                    const isActive = s.id <= step;
-                    const isCurrent = s.id === step;
-
-                    return (
-                        <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-500'} ${isCurrent ? 'ring-4 ring-blue-600/20 scale-110' : ''}`}>
-                                <Icon size={20} />
-                            </div>
-                            <span className={`text-sm font-medium ${isActive ? 'text-white' : 'text-zinc-500'}`}>{s.label}</span>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Step Content */}
-            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 mb-8 min-h-[400px]">
-                {step === 1 && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <h2 className="text-xl font-bold text-white mb-4">Project Basics</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">Project Title</label>
-                                <input type="text" className="w-full bg-black/20 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. AI Marketing Platform" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
-                                <textarea rows={4} className="w-full bg-black/20 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 resize-none" placeholder="Describe your project goals..." />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">Category</label>
-                                <select className="w-full bg-black/20 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
-                                    <option>Development</option>
-                                    <option>Design</option>
-                                    <option>Marketing</option>
-                                    <option>Research</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {step === 2 && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-bold text-white">Team & Skills</h2>
-                            <button className="text-sm text-blue-500 hover:text-blue-400 font-medium">+ Add Member</button>
-                        </div>
-
-                        {/* Member Card Example */}
-                        <div className="bg-black/20 border border-zinc-800 rounded-xl p-4">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="h-10 w-10 rounded-full bg-zinc-700 flex items-center justify-center text-white font-bold">RN</div>
-                                <div>
-                                    <div className="font-medium text-white">Rajayogi Nandina</div>
-                                    <div className="text-xs text-zinc-500">Owner</div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 pl-14">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-zinc-500 mb-1">Role</label>
-                                        <select className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white">
-                                            <option>Full Stack Developer</option>
-                                            <option>UI/UX Designer</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-zinc-500 mb-1 flex items-center gap-1">
-                                            <Award size={12} /> Skill Score
-                                        </label>
-                                        <div className="flex items-center gap-3">
-                                            <input type="range" className="flex-1 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
-                                            <span className="text-sm font-bold text-blue-400">85</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {step === 3 && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-bold text-white">Project Timeline (Gantt)</h2>
-                            <button className="text-sm text-blue-500 hover:text-blue-400 font-medium">+ Add Phase</button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {/* Phase 1 */}
-                            <div className="bg-black/20 border border-zinc-800 rounded-xl p-4">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <div className="w-2 h-12 rounded-full bg-blue-500"></div>
-                                    <div className="flex-1">
-                                        <input type="text" defaultValue="Planning & Research" className="bg-transparent text-white font-medium focus:outline-none w-full" />
-                                        <div className="flex items-center gap-4 text-sm text-zinc-500 mt-1">
-                                            <span>Start: Dec 01</span>
-                                            <span>End: Dec 15</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {/* Phase 2 */}
-                            <div className="bg-black/20 border border-zinc-800 rounded-xl p-4">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <div className="w-2 h-12 rounded-full bg-purple-500"></div>
-                                    <div className="flex-1">
-                                        <input type="text" defaultValue="Design & Prototyping" className="bg-transparent text-white font-medium focus:outline-none w-full" />
-                                        <div className="flex items-center gap-4 text-sm text-zinc-500 mt-1">
-                                            <span>Start: Dec 16</span>
-                                            <span>End: Jan 10</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {step === 4 && (
-                    <div className="text-center space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 py-8">
-                        <div className="w-20 h-20 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center mx-auto mb-4">
-                            <Shield size={40} />
-                        </div>
-                        <h2 className="text-2xl font-bold text-white">Ready for Verification</h2>
-                        <p className="text-zinc-400 max-w-md mx-auto">
-                            Your project details, team structure, and timeline are ready.
-                            Submit your project for admin approval to start working.
-                        </p>
-
-                        <div className="bg-zinc-900 p-6 rounded-2xl max-w-sm mx-auto text-left border border-zinc-800">
-                            <h3 className="font-bold text-white mb-4">Summary</h3>
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-500">Team Size</span>
-                                    <span className="text-white">1 Member</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-500">Duration</span>
-                                    <span className="text-white">45 Days</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-zinc-500">Phases</span>
-                                    <span className="text-white">2 Phases</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Navigation Buttons */}
+        <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
-                <button
-                    onClick={prevStep}
-                    disabled={step === 1}
-                    className={`px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
-                >
-                    <ChevronLeft size={20} /> Back
+                <div>
+                    <h1 className="text-4xl font-bold text-white mb-2">Creative Studio</h1>
+                    <p className="text-zinc-400">Your space to draft, create, and launch.</p>
+                </div>
+                <button className="bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-colors">
+                    <Layout size={18} /> View Drafts
                 </button>
+            </div>
 
-                {step < 4 ? (
-                    <button
-                        onClick={nextStep}
-                        className="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-600/20 transition-all active:scale-95 flex items-center gap-2"
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Creation Area */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Quick Draft */}
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-24 bg-purple-600/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-purple-600/20 transition-colors"></div>
+
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+                                <PenTool size={20} />
+                            </div>
+                            <h2 className="text-xl font-bold text-white">Quick Draft</h2>
+                        </div>
+
+                        <div className="relative">
+                            <textarea
+                                value={draftContent}
+                                onChange={(e) => setDraftContent(e.target.value)}
+                                placeholder="What are you working on? Draft your next big idea..."
+                                className="w-full h-40 bg-black/20 border border-white/10 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 resize-none transition-colors"
+                            />
+                            <div className="absolute bottom-4 right-4 flex gap-2">
+                                <button className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors">
+                                    <ImageIcon size={18} />
+                                </button>
+                                <button
+                                    disabled={!draftContent.trim()}
+                                    className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all"
+                                >
+                                    <Send size={16} /> Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Recent Drafts List (Mock) */}
+                    <div>
+                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <Sparkles size={18} className="text-yellow-500" /> Recent Drafts
+                        </h3>
+                        <div className="grid gap-4">
+                            {[1, 2].map((i) => (
+                                <div key={i} className="bg-zinc-900/30 border border-white/5 rounded-xl p-4 hover:bg-zinc-800/50 transition-colors cursor-pointer flex items-center justify-between group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-white transition-colors">
+                                            <FileText size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium text-white group-hover:text-blue-400 transition-colors">Untitled Draft {i}</h4>
+                                            <p className="text-xs text-zinc-500">Last edited 2h ago</p>
+                                        </div>
+                                    </div>
+                                    <button className="text-zinc-500 hover:text-white px-3 py-1 rounded-lg hover:bg-white/10 text-sm transition-colors">
+                                        Edit
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar Actions */}
+                <div className="space-y-6">
+                    {/* Launch Project Card */}
+                    <div
+                        onClick={() => setIsWizardOpen(true)}
+                        className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-500/30 rounded-2xl p-6 cursor-pointer hover:scale-[1.02] transition-transform group"
                     >
-                        Next <ChevronRight size={20} />
-                    </button>
-                ) : (
-                    <Link href="/projects">
-                        <button className="px-8 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold shadow-lg shadow-green-600/20 transition-all active:scale-95 flex items-center gap-2">
-                            Submit for Approval <Check size={20} />
-                        </button>
-                    </Link>
-                )}
+                        <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                            <Rocket size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-1">Launch Project</h3>
+                        <p className="text-sm text-blue-200/60 mb-4">Start a new collaborative project. Invite team members and set timelines.</p>
+                        <span className="text-sm font-medium text-blue-400 group-hover:text-blue-300 flex items-center gap-1">
+                            Start Wizard <ChevronRight size={16} />
+                        </span>
+                    </div>
+
+                    {/* Create Portfolio Item */}
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 cursor-pointer hover:border-white/20 transition-colors group">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-pink-500/10 rounded-lg text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+                                <FolderPlus size={18} />
+                            </div>
+                            <h3 className="font-bold text-white">Add to Portfolio</h3>
+                        </div>
+                        <p className="text-sm text-zinc-500">Upload finished work to your profile showcase.</p>
+                    </div>
+                </div>
             </div>
         </div>
     );
+}
+
+function ChevronRight({ size }: { size?: number }) {
+    return <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+}
+
+function FileText({ size }: { size?: number }) {
+    return <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
 }
