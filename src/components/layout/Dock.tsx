@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 const NAV_ITEMS = [
     { icon: Home, label: "Home", href: "/" },
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
 export default function Dock() {
     const pathname = usePathname();
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const { data: session } = useSession();
 
     return (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
@@ -55,7 +57,15 @@ export default function Dock() {
                                     }}
                                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                 >
-                                    <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    {item.label === "Profile" && session?.user?.image ? (
+                                        <img
+                                            src={session.user.image}
+                                            alt={session.user.name || "Profile"}
+                                            className="w-6 h-6 rounded-full object-cover border border-white/20"
+                                        />
+                                    ) : (
+                                        <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+                                    )}
 
                                     <AnimatePresence>
                                         {isHovered && (
