@@ -15,6 +15,8 @@ interface UserProfile {
         enableOverlay: boolean;
         gradient: string;
     };
+    skills: string[];
+    projects: string[];
     email?: string;
 }
 
@@ -25,18 +27,6 @@ interface Post {
     likes: number;
     comments: number;
     shares: number;
-}
-
-interface GlobalState {
-    userProfile: UserProfile;
-    updateUserProfile: (data: Partial<UserProfile>) => void;
-    posts: Post[];
-    addPost: (content: string) => void;
-    toggleLike: (id: number) => void;
-    perspectives: Perspective[];
-    addPerspective: (perspective: Perspective) => void;
-    privacySettings: PrivacySettings;
-    updatePrivacySettings: (settings: Partial<PrivacySettings>) => void;
 }
 
 interface Perspective {
@@ -63,11 +53,22 @@ interface PrivacySettings {
     originCountry: string;
 }
 
+interface GlobalState {
+    userProfile: UserProfile;
+    updateUserProfile: (data: Partial<UserProfile>) => void;
+    posts: Post[];
+    addPost: (content: string) => void;
+    toggleLike: (id: number) => void;
+    perspectives: Perspective[];
+    addPerspective: (perspective: Perspective) => void;
+    privacySettings: PrivacySettings;
+    updatePrivacySettings: (settings: Partial<PrivacySettings>) => void;
+}
+
 const defaultPrivacySettings: PrivacySettings = {
     locationTracking: true,
     originCountry: "United States"
 };
-
 const defaultProfile: UserProfile = {
     name: "Rajayogi Nandina",
     bio: "Full Stack Developer • UI/UX Enthusiast",
@@ -80,6 +81,8 @@ const defaultProfile: UserProfile = {
         enableOverlay: true,
         gradient: "from-blue-600 to-purple-600"
     },
+    skills: ["React", "TypeScript", "UI/UX", "AI"],
+    projects: ["Loominn Rebuild", "Eco-Tracker"],
     email: ""
 };
 
@@ -186,6 +189,8 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
                     image: session.user.image || "",
                     coverImage: defaultProfile.coverImage,
                     coverSettings: defaultProfile.coverSettings,
+                    skills: defaultProfile.skills,
+                    projects: defaultProfile.projects,
                     email: sessionEmail
                 };
                 setUserProfile(newProfile);

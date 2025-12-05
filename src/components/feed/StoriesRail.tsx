@@ -164,16 +164,26 @@ export default function StoriesRail() {
                             {/* Author Header */}
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 overflow-hidden border border-zinc-700 shadow-lg">
-                                    {brief.userImage ? (
+                                    {(brief.userId === 'u-current' ? userProfile.image : brief.userImage) ? (
                                         // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={brief.userImage} alt="" className="w-full h-full object-cover" />
+                                        <img
+                                            src={brief.userId === 'u-current' ? userProfile.image : brief.userImage}
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                        />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-white font-bold">{brief.userName.charAt(0)}</div>
+                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-white font-bold">
+                                            {(brief.userId === 'u-current' ? userProfile.name : brief.userName).charAt(0)}
+                                        </div>
                                     )}
                                 </div>
                                 <div className="overflow-hidden">
-                                    <p className="text-xs font-bold text-white truncate">{brief.userName}</p>
-                                    <p className="text-[10px] text-zinc-500 truncate">{brief.role}</p>
+                                    <p className="text-xs font-bold text-white truncate">
+                                        {brief.userId === 'u-current' ? userProfile.name : brief.userName}
+                                    </p>
+                                    <p className="text-[10px] text-zinc-500 truncate">
+                                        {brief.userId === 'u-current' ? (userProfile.bio?.split("•")[0]?.trim() || "Member") : brief.role}
+                                    </p>
                                 </div>
                             </div>
 
@@ -300,16 +310,26 @@ export default function StoriesRail() {
                             <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/95 sticky top-0 z-50">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border border-zinc-700">
-                                        {perspectives[selectedBriefIndex].userImage ? (
+                                        {(perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.image : perspectives[selectedBriefIndex].userImage) ? (
                                             // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={perspectives[selectedBriefIndex].userImage} alt="" className="w-full h-full object-cover" />
+                                            <img
+                                                src={perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.image : perspectives[selectedBriefIndex].userImage}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xs text-white font-bold">{perspectives[selectedBriefIndex].userName.charAt(0)}</div>
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-white font-bold">
+                                                {(perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.name : perspectives[selectedBriefIndex].userName).charAt(0)}
+                                            </div>
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="text-white font-bold text-sm">{perspectives[selectedBriefIndex].userName}</h3>
-                                        <p className="text-zinc-400 text-xs">{perspectives[selectedBriefIndex].role}</p>
+                                        <h3 className="text-white font-bold text-sm">
+                                            {perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.name : perspectives[selectedBriefIndex].userName}
+                                        </h3>
+                                        <p className="text-zinc-400 text-xs">
+                                            {perspectives[selectedBriefIndex].userId === 'u-current' ? (userProfile.bio?.split("•")[0]?.trim() || "Member") : perspectives[selectedBriefIndex].role}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
