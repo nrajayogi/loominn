@@ -2,7 +2,7 @@
 
 import StatusMenu from "../ui/StatusMenu";
 
-import { Home, LayoutGrid, Plus, User, Bell, Zap } from "lucide-react";
+import { Home, LayoutGrid, Plus, User, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,6 @@ const NAV_ITEMS = [
     { icon: LayoutGrid, label: "Projects", href: "/projects" },
     { icon: Zap, label: "Feed", href: "/feed" },
     { icon: Plus, label: "Create", href: "/projects/create", highlight: true },
-    { icon: Bell, label: "Status", href: "/projects/status" },
     { icon: User, label: "Profile", href: "/profile" },
 ];
 
