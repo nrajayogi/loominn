@@ -54,4 +54,6 @@ export const authConfig = {
     session: {
         strategy: "jwt" // Ensure we use JWT so middleware can verify without DB
     },
+    secret: process.env.AUTH_SECRET,
+    trustHost: true,
 } satisfies NextAuthConfig
