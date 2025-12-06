@@ -14,7 +14,7 @@ import {
     LineChart
 } from "lucide-react";
 
-export type SlideType = 'hero' | 'standard' | 'feature' | 'founders' | 'skill-score';
+export type SlideType = 'hero' | 'standard' | 'feature' | 'founders' | 'skill-score' | 'match-score';
 
 export interface SlideData {
     id: number;
@@ -24,7 +24,7 @@ export interface SlideData {
     content?: string[];
     quote?: string;
     type: SlideType;
-    icon?: any;
+    icon?: React.ElementType;
     image?: string;
     accent?: string;
     bgGradient?: string;
@@ -136,12 +136,13 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             id: 8,
             title: "Orbit Engine",
             subtitle: "AI-Driven Discovery",
+            tagline: "Algorithmic Relevance Calculation",
             content: [
-                "Capability Matching: Finds talent by verified output.",
-                "The Graph: Connects skills automatically.",
-                "Zero-Search: Talent 'Orbits' into view."
+                "Skills: +15pts (Verified Capability)",
+                "Projects: +20pts (Proven Output)",
+                "Domain: +10pts (Contextual Fit)"
             ],
-            type: "feature",
+            type: "match-score",
             icon: Rocket,
             image: "Orbit",
             accent: "text-cyan-400"
@@ -474,12 +475,13 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             id: 4,
             title: "Orbit Engine",
             subtitle: "The Great Equalizer",
+            tagline: "Algorithmic Relevance Calculation",
             content: [
-                "Objectivity: Matches skills to needs without bias.",
-                "Visibility: Highlights overlooked talent pools.",
-                "Efficiency: Reduces unemployment friction."
+                "Skills: +15pts (Objective Merit)",
+                "Projects: +20pts (Verified Output)",
+                "Domain: +10pts (Regional Focus)"
             ],
-            type: "feature",
+            type: "match-score",
             icon: Globe,
             image: "Orbit",
             accent: "text-cyan-400"

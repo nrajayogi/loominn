@@ -1,27 +1,22 @@
-
 "use client";
 
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, X, Video, Code, Globe, Zap, Users, Shield, TrendingUp, Layers, Rocket, ExternalLink } from "lucide-react";
+import { ChevronRight, ChevronLeft, X, Video, Code, Globe, Zap, Shield, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { DECK_VARIANTS, SlideData } from "@/lib/data/presentation-decks";
 import FounderContactWidget from "@/components/presentation/FounderContactWidget";
 
-function PresentationContent() {
-    const searchParams = useSearchParams();
-    const deckParam = searchParams.get("deck");
-    const deckId = (deckParam && DECK_VARIANTS[deckParam]) ? deckParam : "standard";
+interface PresentationContentProps {
+    deckId: string;
+}
+
+function PresentationContent({ deckId }: PresentationContentProps) {
     const SLIDES: SlideData[] = DECK_VARIANTS[deckId];
 
     const [currentSlide, setCurrentSlide] = useState(0);
     const [direction, setDirection] = useState(0);
-
-    // Reset slide when deck changes
-    useEffect(() => {
-        setCurrentSlide(0);
-    }, [deckId]);
 
     const nextSlide = useCallback(() => {
         if (currentSlide < SLIDES.length - 1) {
@@ -111,8 +106,8 @@ function PresentationContent() {
                     ].map((mode) => (
                         <Link
                             key={mode.id}
-                            href={`/presentation?deck=${mode.id}`}
-                            className={`text-xs font-mono px-3 py-1 rounded-full transition-all ${deckId === mode.id ? 'bg-blue-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/10'} `}
+                            href={`/ presentation ? deck = ${mode.id} `}
+                            className={`text - xs font - mono px - 3 py - 1 rounded - full transition - all ${deckId === mode.id ? 'bg-blue-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/10'} `}
                         >
                             {mode.label}
                         </Link>
@@ -266,6 +261,132 @@ function PresentationContent() {
                                                     <span className="text-lg text-zinc-200">{point}</span>
                                                 </motion.div>
                                             ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : slide.type === "match-score" ? (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 h-full items-center p-8 relative overflow-hidden">
+                                    {/* Background FX */}
+                                    <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
+                                    <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-cyan-600/20 rounded-full blur-[100px] animate-pulse" />
+
+                                    {/* Left: The Visualization */}
+                                    <div className="flex flex-col items-center justify-center">
+                                        <div className="relative">
+                                            {/* Orbiting Circles Animation */}
+                                            <motion.div
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                                className="absolute inset-0 border border-dashed border-white/20 rounded-full w-[300px] h-[300px] m-auto"
+                                            />
+                                            <motion.div
+                                                animate={{ rotate: -360 }}
+                                                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                                                className="absolute inset-0 border border-dashed border-white/10 rounded-full w-[450px] h-[450px] m-auto -z-10"
+                                            />
+
+                                            {/* Central Score */}
+                                            <motion.div
+                                                initial={{ scale: 0.5, opacity: 0 }}
+                                                whileInView={{ scale: 1, opacity: 1 }}
+                                                className="w-[200px] h-[200px] bg-black border-4 border-cyan-500/50 rounded-full flex flex-col items-center justify-center relative z-10 shadow-[0_0_50px_rgba(6,182,212,0.3)]"
+                                            >
+                                                <span className="text-6xl font-bold text-white tracking-tighter">85%</span>
+                                                <span className="text-sm font-mono text-cyan-400 uppercase tracking-widest mt-2">Match</span>
+                                            </motion.div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: The Breakdown */}
+                                    <div className="space-y-8 relative z-10">
+                                        <div>
+                                            <h2 className="text-4xl font-bold text-white mb-2">{slide.title}</h2>
+                                            <p className="text-xl text-zinc-400 font-light">{slide.subtitle}</p>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            <h4 className="text-sm font-mono text-zinc-500 uppercase tracking-widest border-b border-white/10 pb-2">Relevance Input Factors</h4>
+
+                                            {/* Factor 1: Skills */}
+                                            <motion.div
+                                                initial={{ x: 50, opacity: 0 }}
+                                                whileInView={{ x: 0, opacity: 1 }}
+                                                transition={{ delay: 0.1 }}
+                                                className="flex items-center gap-4 group"
+                                            >
+                                                <div className="w-12 h-12 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 group-hover:scale-110 transition-transform">
+                                                    <Zap size={24} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-baseline mb-1">
+                                                        <h5 className="text-lg font-bold text-white">Skills Match</h5>
+                                                        <span className="text-green-400 font-mono">+15 pts</span>
+                                                    </div>
+                                                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            whileInView={{ width: "60%" }}
+                                                            transition={{ delay: 0.5, duration: 1 }}
+                                                            className="h-full bg-green-500"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+
+                                            {/* Factor 2: Projects */}
+                                            <motion.div
+                                                initial={{ x: 50, opacity: 0 }}
+                                                whileInView={{ x: 0, opacity: 1 }}
+                                                transition={{ delay: 0.2 }}
+                                                className="flex items-center gap-4 group"
+                                            >
+                                                <div className="w-12 h-12 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                                                    <Code size={24} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-baseline mb-1">
+                                                        <h5 className="text-lg font-bold text-white">Verified Projects</h5>
+                                                        <span className="text-blue-400 font-mono">+20 pts</span>
+                                                    </div>
+                                                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            whileInView={{ width: "80%" }}
+                                                            transition={{ delay: 0.7, duration: 1 }}
+                                                            className="h-full bg-blue-500"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+
+                                            {/* Factor 3: Domain (Highlighted) */}
+                                            <motion.div
+                                                initial={{ x: 50, opacity: 0 }}
+                                                whileInView={{ x: 0, opacity: 1 }}
+                                                transition={{ delay: 0.3 }}
+                                                className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20 relative overflow-hidden group"
+                                            >
+                                                <div className="absolute inset-0 bg-purple-500/5 animate-pulse" />
+                                                <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 relative z-10 group-hover:scale-110 transition-transform">
+                                                    <Globe size={24} />
+                                                </div>
+                                                <div className="flex-1 relative z-10">
+                                                    <div className="flex justify-between items-baseline mb-1">
+                                                        <h5 className="text-lg font-bold text-white">Domain Density</h5>
+                                                        <span className="text-purple-300 font-mono font-bold">+10 pts</span>
+                                                    </div>
+                                                    <p className="text-xs text-purple-200/70">Bonus for Industry Expertise</p>
+                                                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden mt-2">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            whileInView={{ width: "100%" }}
+                                                            transition={{ delay: 0.9, duration: 1 }}
+                                                            className="h-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -425,10 +546,10 @@ function PresentationContent() {
                     >
                         <ChevronRight size={20} />
                     </button>
-                </div >
+                </div>
 
                 {/* RIGHT: Citations */}
-                < div className="w-64 flex justify-end pointer-events-auto min-h-[40px]" >
+                <div className="w-64 flex justify-end pointer-events-auto min-h-[40px]">
                     <AnimatePresence mode="wait">
                         {slide.citation && (
                             <motion.div
@@ -455,13 +576,13 @@ function PresentationContent() {
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div >
-            </div >
+                </div>
+            </div>
 
             <FounderContactWidget deckId={deckId} />
 
 
-        </div >
+        </div>
     );
 }
 
@@ -472,7 +593,16 @@ export default function PresentationPage() {
                 <div className="w-8 h-8 border-2 border-white/20 border-t-blue-500 rounded-full animate-spin" />
             </div>
         }>
-            <PresentationContent />
+            <PresentationWrapper />
         </Suspense>
     );
+}
+
+function PresentationWrapper() {
+    const searchParams = useSearchParams();
+    const deckParam = searchParams.get("deck");
+    // Validate deck param
+    const deckId = (deckParam && DECK_VARIANTS[deckParam]) ? deckParam : "standard";
+
+    return <PresentationContent key={deckId} deckId={deckId} />;
 }
