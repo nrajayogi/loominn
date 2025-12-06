@@ -27,7 +27,8 @@ const SLIDES = [
         type: "standard",
         icon: Shield,
         accent: "text-red-400",
-        citation: "Kline, P., Rose, E., & Walters, C. (2021). Systemic Discrimination Among Large U.S. Employers. NBER Working Paper No. 29053."
+        citation: "Kline, P., Rose, E., & Walters, C. (2021). Systemic Discrimination Among Large U.S. Employers. NBER Working Paper No. 29053.",
+        citationLink: "https://www.nber.org/papers/w29053"
     },
     {
         id: 3,
@@ -41,7 +42,8 @@ const SLIDES = [
         type: "standard",
         icon: TrendingUp,
         accent: "text-orange-400",
-        citation: "U.S. Department of Labor. (2023). Cost of a Bad Hire Report. Estimated at 30% of employee's first-year earnings."
+        citation: "U.S. Department of Labor. (2023). Cost of a Bad Hire Report. Estimated at 30% of employee's first-year earnings.",
+        citationLink: "https://www.dol.gov"
     },
     {
         id: 4,
@@ -55,7 +57,8 @@ const SLIDES = [
         type: "standard",
         icon: Globe,
         accent: "text-yellow-400",
-        citation: "Bloom, N., et al. (2023). Hybrid Working From Home Works Out. NBER Working Paper; Nature (Trip.com study)."
+        citation: "Bloom, N., et al. (2023). Hybrid Working From Home Works Out. NBER Working Paper; Nature (Trip.com study).",
+        citationLink: "https://www.nature.com/articles/s41586-024-07500-2"
     },
     {
         id: 5,
@@ -150,7 +153,8 @@ const SLIDES = [
         type: "standard",
         icon: Layers,
         accent: "text-indigo-400",
-        citation: "World Economic Forum. (2025). The Future of Jobs Report 2025. Skill gaps cited as top barrier to transformation."
+        citation: "World Economic Forum. (2025). The Future of Jobs Report 2025. Skill gaps cited as top barrier to transformation.",
+        citationLink: "https://www.weforum.org/publications/the-future-of-jobs-report-2023/"
     },
     {
         id: 12,
@@ -264,7 +268,7 @@ export default function PresentationPage() {
             </div>
 
             {/* Stage */}
-            <div className="relative w-full h-full flex items-center justify-center p-8 md:p-16">
+            <div className="relative w-full h-full flex items-center justify-center p-4">
                 <AnimatePresence initial={false} custom={direction} mode="wait">
                     <motion.div
                         key={currentSlide}
@@ -278,14 +282,14 @@ export default function PresentationPage() {
                             opacity: { duration: 0.2 },
                             rotateY: { duration: 0.4 }
                         }}
-                        className="absolute w-full max-w-6xl aspect-[16/9] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[3rem] shadow-2xl p-12 md:p-20 flex flex-col justify-center overflow-hidden"
+                        className="absolute w-full max-w-[95vw] h-[80vh] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8 md:p-12 flex flex-col justify-center overflow-hidden"
                     >
                         {/* Slide Glow */}
                         <div className={`absolute top-0 right-0 p-64 ${slide.accent?.replace("text", "bg") || "bg-blue-500"}/10 blur-[120px] rounded-full pointer-events-none opacity-50`}></div>
 
-                        <div className="relative z-10 w-full h-full flex flex-col justify-center">
+                        <div className="relative z-10 w-full h-full flex flex-col justify-center text-center md:text-left">
                             {slide.type === "hero" ? (
-                                <div className="text-center space-y-8">
+                                <div className="text-center space-y-8 flex flex-col items-center justify-center h-full">
                                     <motion.div
                                         initial={{ scale: 0.9, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
@@ -298,7 +302,7 @@ export default function PresentationPage() {
                                         initial={{ y: 20, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
                                         transition={{ delay: 0.2 }}
-                                        className="text-7xl md:text-9xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-zinc-500"
+                                        className="text-6xl md:text-9xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-zinc-500"
                                     >
                                         {slide.title}
                                     </motion.h1>
@@ -323,14 +327,14 @@ export default function PresentationPage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center h-full">
-                                    <div className="space-y-10">
+                                    <div className="space-y-10 flex flex-col justify-center order-2 md:order-1">
                                         <div>
-                                            <div className={`flex items-center gap-3 ${slide.accent} mb-4`}>
+                                            <div className={`flex items-center gap-3 ${slide.accent} mb-4 justify-center md:justify-start`}>
                                                 {slide.icon && <slide.icon size={24} />}
                                                 <span className="text-sm font-bold uppercase tracking-[0.2em]">0{currentSlide + 1} // {slide.id < 10 ? `0${slide.id}` : slide.id}</span>
                                             </div>
-                                            <h2 className="text-5xl md:text-6xl font-bold text-white leading-tight mb-4">{slide.title}</h2>
-                                            <h3 className="text-2xl text-zinc-400 font-light border-l-2 border-white/10 pl-6">{slide.subtitle}</h3>
+                                            <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-4">{slide.title}</h2>
+                                            <h3 className="text-2xl md:text-3xl text-zinc-400 font-light border-l-0 md:border-l-2 border-white/10 pl-0 md:pl-6">{slide.subtitle}</h3>
                                         </div>
 
                                         <div className="space-y-6">
@@ -340,9 +344,9 @@ export default function PresentationPage() {
                                                     initial={{ x: -20, opacity: 0 }}
                                                     animate={{ x: 0, opacity: 1 }}
                                                     transition={{ delay: 0.4 + (i * 0.1) }}
-                                                    className="flex items-start gap-4 text-xl text-zinc-300 font-light"
+                                                    className="flex items-start gap-4 text-xl md:text-2xl text-zinc-300 font-light"
                                                 >
-                                                    <div className={`mt-2 w-1.5 h-1.5 rounded-full ${slide.accent?.replace("text", "bg") || "bg-white"}`} />
+                                                    <div className={`mt-2.5 w-1.5 h-1.5 rounded-full ${slide.accent?.replace("text", "bg") || "bg-white"} flex-shrink-0`} />
                                                     {point}
                                                 </motion.div>
                                             ))}
@@ -361,14 +365,14 @@ export default function PresentationPage() {
                                     </div>
 
                                     {/* Visual Side */}
-                                    <div className="h-full w-full flex items-center justify-center p-8">
-                                        <div className="w-full aspect-square relative group">
-                                            <div className={`absolute inset-0 bg-gradient-to-br ${slide.accent?.replace("text", "from") || "from-blue-500"}/20 to-transparent rounded-[2rem] transform rotate-3 group-hover:rotate-6 transition-transform duration-500`} />
-                                            <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-[2rem] flex items-center justify-center -rotate-3 group-hover:-rotate-0 transition-transform duration-500 shadow-2xl">
-                                                {slide.icon && <slide.icon size={160} className={`${slide.accent} opacity-50 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]`} />}
+                                    <div className="h-full w-full flex items-center justify-center p-8 order-1 md:order-2">
+                                        <div className="w-full aspect-square max-w-[500px] relative group perspective-1000">
+                                            <div className={`absolute inset-0 bg-gradient-to-br ${slide.accent?.replace("text", "from") || "from-blue-500"}/20 to-transparent rounded-3xl transform rotate-3 group-hover:rotate-6 transition-transform duration-500`} />
+                                            <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center justify-center -rotate-3 group-hover:-rotate-0 transition-transform duration-500 shadow-2xl">
+                                                {slide.icon && <slide.icon size={200} className={`${slide.accent} opacity-50 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]`} />}
 
                                                 {/* Decorative Grid */}
-                                                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] rounded-[2rem]" />
+                                                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] rounded-3xl" />
                                             </div>
                                         </div>
                                     </div>
@@ -422,18 +426,24 @@ export default function PresentationPage() {
                         {slide.citation && (
                             <motion.div
                                 key={slide.id}
-                                initial={{ y: 20, opacity: 0 }}
+                                initial={{ y: 50, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                exit={{ y: 10, opacity: 0 }}
+                                exit={{ y: 50, opacity: 0 }}
                                 className="group relative"
                             >
-                                <div className="bg-zinc-900 backdrop-blur-md border border-white/20 rounded-full pl-4 pr-4 py-2 text-xs font-mono text-zinc-400 transition-all duration-300 hover:bg-zinc-800 hover:scale-105 shadow-xl flex items-center gap-3 cursor-help">
-                                    <span className="font-bold text-blue-400">REF</span>
-                                    <div className="h-4 w-[1px] bg-white/20"></div>
-                                    <span className="max-w-[150px] md:max-w-[300px] truncate group-hover:max-w-none group-hover:whitespace-normal transition-all duration-300">{slide.citation}</span>
-
-                                    {/* Pulse Indicator */}
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                <div className="bg-black border-2 border-zinc-800 rounded-lg p-3 max-w-[250px] shadow-2xl flex flex-col gap-2">
+                                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                        Live Reference
+                                    </div>
+                                    <p className="text-xs text-zinc-300 font-sans leading-relaxed line-clamp-2">
+                                        {slide.citation}
+                                    </p>
+                                    {slide.citationLink && (
+                                        <Link href={slide.citationLink} target="_blank" className="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-1 font-bold tracking-wide uppercase">
+                                            Open Source <Rocket size={10} />
+                                        </Link>
+                                    )}
                                 </div>
                             </motion.div>
                         )}
@@ -445,3 +455,4 @@ export default function PresentationPage() {
         </div>
     );
 }
+```
