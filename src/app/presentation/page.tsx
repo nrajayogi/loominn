@@ -206,10 +206,33 @@ export default function PresentationPage() {
                             ) : slide.type === "founders" ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 h-full w-full rounded-2xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-white/10 bg-black/50">
                                     {[slide.founder1, slide.founder2].map((founder, idx) => (
-                                        <div key={idx} className="relative h-full w-full group overflow-hidden">
+                                        <div
+                                            key={idx}
+                                            className="relative h-full w-full group overflow-hidden bg-zinc-900"
+                                            onMouseEnter={(e) => {
+                                                const video = e.currentTarget.querySelector('video');
+                                                if (video) video.play();
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const video = e.currentTarget.querySelector('video');
+                                                if (video) {
+                                                    video.pause();
+                                                    video.currentTime = 0;
+                                                }
+                                            }}
+                                        >
                                             {/* Video Background (Mock) */}
-                                            <div className="absolute inset-0 bg-zinc-900 transition-transform duration-700 group-hover:scale-105">
-                                                {founder?.image ? (
+                                            <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+                                                {founder?.videoSrc ? (
+                                                    <video
+                                                        src={founder.videoSrc}
+                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0"
+                                                        muted
+                                                        playsInline
+                                                        loop
+                                                        poster={founder.image}
+                                                    />
+                                                ) : founder?.image ? (
                                                     // eslint-disable-next-line @next/next/no-img-element
                                                     <img src={founder.image} alt={founder.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0" />
                                                 ) : (
@@ -218,14 +241,16 @@ export default function PresentationPage() {
                                                     </div>
                                                 )}
 
-                                                {/* Play Button Overlay */}
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transform scale-90 group-hover:scale-100 transition-all">
-                                                        <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center pl-1 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                                                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-black border-b-[6px] border-b-transparent ml-1" />
+                                                {/* Play Button Overlay - Only show if NO video or if video is paused (handled by hover logic visually) */}
+                                                {!founder?.videoSrc && (
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                        <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transform scale-90 group-hover:scale-100 transition-all">
+                                                            <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center pl-1 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                                                                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-black border-b-[6px] border-b-transparent ml-1" />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
 
                                             {/* Content Overlay */}

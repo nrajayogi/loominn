@@ -193,8 +193,8 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             subtitle: "Fusing Vision with Execution",
             tagline: "Building the infrastructure for the next generation of work.",
             type: "founders",
-            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg" },
-            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg" },
+            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg", videoSrc: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" },
+            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg", videoSrc: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" },
             bgGradient: "from-zinc-900 via-zinc-900 to-black"
         },
         {
@@ -294,8 +294,8 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             subtitle: "Fusing Vision with Execution",
             tagline: "Building the infrastructure for the next generation of work.",
             type: "founders",
-            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg" },
-            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg" },
+            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg", videoSrc: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" },
+            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg", videoSrc: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" },
             bgGradient: "from-zinc-900 via-zinc-900 to-black"
         },
         {
@@ -464,8 +464,8 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             subtitle: "Fusing Vision with Execution",
             tagline: "Building the infrastructure for the next generation of work.",
             type: "founders",
-            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg" },
-            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg" },
+            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg", videoSrc: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" },
+            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg", videoSrc: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" },
             bgGradient: "from-zinc-900 via-zinc-900 to-black"
         },
         {
