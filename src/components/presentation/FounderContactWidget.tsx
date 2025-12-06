@@ -94,7 +94,7 @@ export default function FounderContactWidget({ deckId }: { deckId: string }) {
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        type="spring"
+                                        transition={{ type: "spring" }}
                                         className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 mb-2"
                                     >
                                         <CheckCircle size={32} />

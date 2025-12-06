@@ -11,7 +11,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     providers: [
         // Re-declare providers to ensure they are loaded (NextAuth sometimes needs this)
         // OR better: spread them. existing providers are fine.
-        ...authConfig.providers.filter(p => p.id !== "credentials"), // Remove mock credentials
+        ...authConfig.providers.filter((p: any) => p?.id !== "credentials"), // Remove mock credentials
 
         // Add Full Credentials Provider with DB Access
         Credentials({

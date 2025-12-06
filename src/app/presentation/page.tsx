@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, X, Video, Code, Globe, Zap, Users, Shield, TrendingUp, Layers, Rocket, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { DECK_VARIANTS, SlideData } from "@/lib/data/presentation-decks";
 import FounderContactWidget from "@/components/presentation/FounderContactWidget";
 
-export default function PresentationPage() {
+function PresentationContent() {
     const searchParams = useSearchParams();
     const deckParam = searchParams.get("deck");
     const deckId = (deckParam && DECK_VARIANTS[deckParam]) ? deckParam : "standard";
@@ -203,6 +203,69 @@ export default function PresentationPage() {
                                         </motion.p>
                                     )}
                                 </div>
+                            ) : slide.type === "skill-score" ? (
+                                <div className="flex flex-col items-center justify-center h-full relative overflow-hidden">
+                                    {/* Animated Background */}
+                                    <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] animate-pulse" />
+
+                                    <div className="relative z-10 flex flex-col items-center">
+                                        <motion.div
+                                            initial={{ scale: 0.5, opacity: 0 }}
+                                            whileInView={{ scale: 1, opacity: 1 }}
+                                            transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
+                                            className="relative"
+                                        >
+                                            {/* Score Ring */}
+                                            <svg className="w-64 h-64 rotate-[-90deg]">
+                                                <circle cx="128" cy="128" r="120" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-zinc-800" />
+                                                <motion.circle
+                                                    cx="128"
+                                                    cy="128"
+                                                    r="120"
+                                                    stroke="currentColor"
+                                                    strokeWidth="8"
+                                                    fill="transparent"
+                                                    className="text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                                                    initial={{ pathLength: 0 }}
+                                                    whileInView={{ pathLength: 0.98 }}
+                                                    transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
+                                                />
+                                            </svg>
+                                            {/* Score Number */}
+                                            <div className="absolute inset-0 flex items-center justify-center flex-col">
+                                                <motion.span
+                                                    initial={{ opacity: 0 }}
+                                                    whileInView={{ opacity: 1 }}
+                                                    className="text-7xl font-bold text-white tracking-tighter"
+                                                >
+                                                    98
+                                                </motion.span>
+                                                <span className="text-blue-400 text-sm font-mono uppercase tracking-widest mt-2">Trust Score</span>
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Factors Grid */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl">
+                                            {[
+                                                { label: "Commit Velocity", val: "High", color: "text-green-400" },
+                                                { label: "Code Quality", val: "A+", color: "text-blue-400" },
+                                                { label: "Peer Review", val: "Verified", color: "text-purple-400" }
+                                            ].map((item, i) => (
+                                                <motion.div
+                                                    key={i}
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    whileInView={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 1 + (i * 0.2) }}
+                                                    className="bg-zinc-900/50 border border-white/10 p-6 rounded-xl backdrop-blur-sm text-center"
+                                                >
+                                                    <h4 className="text-zinc-500 text-sm uppercase tracking-wider mb-2">{item.label}</h4>
+                                                    <p className={`text-2xl font-bold ${item.color}`}>{item.val}</p>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             ) : slide.type === "founders" ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 h-full w-full rounded-2xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-white/10 bg-black/50">
                                     {[slide.founder1, slide.founder2].map((founder, idx) => (
@@ -227,7 +290,6 @@ export default function PresentationPage() {
                                                     <video
                                                         src={founder.videoSrc}
                                                         className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0"
-                                                        muted
                                                         playsInline
                                                         loop
                                                         poster={founder.image}
@@ -397,5 +459,17 @@ export default function PresentationPage() {
 
 
         </div >
+    );
+}
+
+export default function PresentationPage() {
+    return (
+        <Suspense fallback={
+            <div className="h-screen w-screen bg-black flex items-center justify-center text-white">
+                <div className="w-8 h-8 border-2 border-white/20 border-t-blue-500 rounded-full animate-spin" />
+            </div>
+        }>
+            <PresentationContent />
+        </Suspense>
     );
 }

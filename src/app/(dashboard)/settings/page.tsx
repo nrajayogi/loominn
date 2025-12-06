@@ -75,7 +75,7 @@ export default function SettingsPage() {
                             <span className="block text-xs text-zinc-500">
                                 {privacySettings.locationTracking
                                     ? "Your precise location is visible on your profile."
-                                    : `Using Account Origin: ${privacySettings.originCountry}`}
+                                    : `Using Account Origin: ${userProfile.accountOrigin}`}
                             </span>
                         </div>
                         <button

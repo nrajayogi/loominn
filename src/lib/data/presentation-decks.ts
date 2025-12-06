@@ -14,7 +14,7 @@ import {
     LineChart
 } from "lucide-react";
 
-export type SlideType = 'hero' | 'standard' | 'feature' | 'founders';
+export type SlideType = 'hero' | 'standard' | 'feature' | 'founders' | 'skill-score';
 
 export interface SlideData {
     id: number;
@@ -188,6 +188,15 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             citationLink: "https://www.weforum.org/publications/the-future-of-jobs-report-2023/"
         },
         {
+            id: 15,
+            title: "Trust Through Verification",
+            subtitle: "The Risk-Adjusted Skill Score",
+            tagline: "Quantifying engineering excellence through algorithmic verification.",
+            type: "skill-score",
+            content: ["98/100 Aggregate Trust", "Algorithm V4.2", "12k+ Verified Data Points"],
+            bgGradient: "from-blue-900/40 via-black to-black"
+        },
+        {
             id: 12,
             title: "Meet the Builders",
             subtitle: "Fusing Vision with Execution",
@@ -287,6 +296,15 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             icon: Code,
             image: "Ledger",
             accent: "text-green-400"
+        },
+        {
+            id: 16,
+            title: "Trust Through Verification",
+            subtitle: "The Risk-Adjusted Skill Score",
+            tagline: "Quantifying engineering excellence through algorithmic verification.",
+            type: "skill-score",
+            content: ["98/100 Aggregate Trust", "Algorithm V4.2", "12k+ Verified Data Points"],
+            bgGradient: "from-blue-900/40 via-black to-black"
         },
         {
             id: 6,
@@ -457,6 +475,15 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             icon: Globe,
             image: "Orbit",
             accent: "text-cyan-400"
+        },
+        {
+            id: 17,
+            title: "Trust Through Verification",
+            subtitle: "The Risk-Adjusted Skill Score",
+            tagline: "Quantifying engineering excellence through algorithmic verification.",
+            type: "skill-score",
+            content: ["98/100 Aggregate Trust", "Algorithm V4.2", "12k+ Verified Data Points"],
+            bgGradient: "from-blue-900/40 via-black to-black"
         },
         {
             id: 5,
