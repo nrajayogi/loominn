@@ -203,6 +203,45 @@ export default function PresentationPage() {
                                         </motion.p>
                                     )}
                                 </div>
+                            ) : slide.type === "founders" ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 h-full w-full rounded-2xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-white/10 bg-black/50">
+                                    {[slide.founder1, slide.founder2].map((founder, idx) => (
+                                        <div key={idx} className="relative h-full w-full group overflow-hidden">
+                                            {/* Video Background (Mock) */}
+                                            <div className="absolute inset-0 bg-zinc-900 transition-transform duration-700 group-hover:scale-105">
+                                                {founder?.image ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={founder.image} alt={founder.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-black">
+                                                        <Video size={48} className="text-zinc-600 opacity-50" />
+                                                    </div>
+                                                )}
+
+                                                {/* Play Button Overlay */}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transform scale-90 group-hover:scale-100 transition-all">
+                                                        <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center pl-1 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                                                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-black border-b-[6px] border-b-transparent ml-1" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Content Overlay */}
+                                            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black via-black/80 to-transparent transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    whileInView={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: 0.2 + (idx * 0.1) }}
+                                                >
+                                                    <h3 className="text-3xl font-bold text-white mb-1">{founder?.name}</h3>
+                                                    <p className="text-blue-400 font-mono text-sm tracking-wider uppercase">{founder?.role}</p>
+                                                </motion.div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center h-full">
                                     <div className="space-y-10 flex flex-col justify-center order-2 md:order-1">

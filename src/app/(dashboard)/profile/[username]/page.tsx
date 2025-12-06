@@ -1,3 +1,5 @@
+"use client";
+
 import { MapPin, Link as LinkIcon, Calendar, UserPlus, Clock, Check, MessageSquare } from "lucide-react";
 import { ProjectCard } from "@/components/ui/ProjectCard";
 import { useState } from "react";
@@ -51,10 +53,10 @@ export default function ProfilePage({ params }: { params: { username: string } }
                         <button
                             onClick={handleConnect}
                             className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${connectionStatus === "none"
-                                    ? "bg-white text-black hover:bg-zinc-200"
-                                    : connectionStatus === "pending"
-                                        ? "bg-zinc-800 text-zinc-400 border border-zinc-700"
-                                        : "bg-green-600 text-white border border-green-500"
+                                ? "bg-white text-black hover:bg-zinc-200"
+                                : connectionStatus === "pending"
+                                    ? "bg-zinc-800 text-zinc-400 border border-zinc-700"
+                                    : "bg-green-600 text-white border border-green-500"
                                 }`}
                         >
                             {connectionStatus === "none" && <><UserPlus size={18} /> Connect</>}

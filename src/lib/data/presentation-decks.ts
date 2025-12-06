@@ -14,7 +14,7 @@ import {
     LineChart
 } from "lucide-react";
 
-export type SlideType = 'hero' | 'standard' | 'feature';
+export type SlideType = 'hero' | 'standard' | 'feature' | 'founders';
 
 export interface SlideData {
     id: number;
@@ -30,6 +30,9 @@ export interface SlideData {
     bgGradient?: string;
     citation?: string;
     citationLink?: string;
+    // Founder specific
+    founder1?: { name: string; role: string; videoSrc?: string; image?: string };
+    founder2?: { name: string; role: string; videoSrc?: string; image?: string };
 }
 
 export const DECK_VARIANTS: Record<string, SlideData[]> = {
@@ -186,6 +189,29 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
         },
         {
             id: 12,
+            title: "Meet the Builders",
+            subtitle: "Fusing Vision with Execution",
+            tagline: "Building the infrastructure for the next generation of work.",
+            type: "founders",
+            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg" },
+            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg" },
+            bgGradient: "from-zinc-900 via-zinc-900 to-black"
+        },
+        {
+            id: 13,
+            title: "The Roadmap",
+            subtitle: "Q1-Q4 2025",
+            content: [
+                "Q1: Beta Launch with 50 Partner Companies.",
+                "Q2: Integrate Orbit Engine v2.",
+                "Q3: Global Expansion to APAC & EMEA."
+            ],
+            type: "standard",
+            icon: Layers,
+            accent: "text-purple-400"
+        },
+        {
+            id: 14,
             title: "The Vision",
             subtitle: "Building the Standard",
             content: [
@@ -264,6 +290,82 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
         },
         {
             id: 6,
+            title: "Meet the Builders",
+            subtitle: "Fusing Vision with Execution",
+            tagline: "Building the infrastructure for the next generation of work.",
+            type: "founders",
+            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg" },
+            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg" },
+            bgGradient: "from-zinc-900 via-zinc-900 to-black"
+        },
+        {
+            id: 7,
+            title: "Seamless Integration",
+            subtitle: "Works With Your Stack",
+            content: [
+                "ATS Connect: Native integration with Greenhouse, lever, and Workday.",
+                "Slack/Teams: Receive candidate briefs directly in chat.",
+                "API First: Build custom workflows on our data layer."
+            ],
+            type: "feature",
+            icon: Layers,
+            image: "Integration",
+            accent: "text-blue-400"
+        },
+        {
+            id: 8,
+            title: "Enterprise Security",
+            subtitle: "SOC2 Compliance & Data Privacy",
+            content: [
+                "Data Encryption: End-to-end encryption for all candidate data.",
+                "GDPR Ready: Full compliance with global privacy standards.",
+                "Role-Based Access: Granular control over who sees what."
+            ],
+            type: "standard",
+            icon: Shield,
+            accent: "text-emerald-400"
+        },
+        {
+            id: 9,
+            title: "Case Study: TechCorp",
+            subtitle: "Reducing Time-to-Hire by 60%",
+            content: [
+                "Challenge: High volume of unqualified applicants.",
+                "Solution: Implemented Loominn Verify-First protocol.",
+                "Result: Interview-to-Offer ratio improved from 10:1 to 3:1."
+            ],
+            type: "standard",
+            icon: TrendingUp,
+            accent: "text-orange-400"
+        },
+        {
+            id: 10,
+            title: "Onboarding Velocity",
+            subtitle: "Day 1 Productivity",
+            content: [
+                "Context Aware: New hires arrive with project context.",
+                "Skill Matching: Assignments based on verified capability.",
+                "Reduced Ramp: 30% faster time to first commit."
+            ],
+            type: "standard",
+            icon: Users,
+            accent: "text-cyan-400"
+        },
+        {
+            id: 11,
+            title: "Flexible Pricing",
+            subtitle: "Scale With Your Needs",
+            content: [
+                "Per Seat: For growing teams needing consistent pipeline.",
+                "Enterprise License: Unlimited access for global orgs.",
+                "Custom SLAs: Dedicated support and uptime guarantees."
+            ],
+            type: "standard",
+            icon: LineChart,
+            accent: "text-indigo-400"
+        },
+        {
+            id: 12,
             title: "Business Impact",
             subtitle: "Operational Efficiency",
             content: [
@@ -278,7 +380,20 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             citationLink: "https://www.nature.com/articles/s41586-024-07500-2"
         },
         {
-            id: 7,
+            id: 13,
+            title: "Roadmap Alignment",
+            subtitle: "Future Proofing Your Talent",
+            content: [
+                "Q3 2025: Advanced AI Skill Verification.",
+                "Q4 2025: Internal Mobility Marketplace.",
+                "2026: Global Payroll Integration."
+            ],
+            type: "standard",
+            icon: Rocket,
+            accent: "text-purple-400"
+        },
+        {
+            id: 14,
             title: "Partnership Choice",
             subtitle: "Why Loominn?",
             content: [
@@ -345,7 +460,57 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
         },
         {
             id: 5,
-            title: "Social Impact",
+            title: "Meet the Builders",
+            subtitle: "Fusing Vision with Execution",
+            tagline: "Building the infrastructure for the next generation of work.",
+            type: "founders",
+            founder1: { name: "Alex Chen", role: "CEO & Product Vision", image: "/founders/alex.jpg" },
+            founder2: { name: "Sarah Jones", role: "CTO & Architecture", image: "/founders/sarah.jpg" },
+            bgGradient: "from-zinc-900 via-zinc-900 to-black"
+        },
+        {
+            id: 6,
+            title: "Regulatory Compliance",
+            subtitle: "Built for Government Standards",
+            content: [
+                "FedRAMP Ready: Architecture designed for federal authorization.",
+                "ADA Compliant: Fully accessible interface for all citizens.",
+                "Equal Opportunity: Audit trails for every hiring decision."
+            ],
+            type: "standard",
+            icon: Shield,
+            accent: "text-red-400"
+        },
+        {
+            id: 7,
+            title: "Data Sovereignty",
+            subtitle: "Secure & Localized",
+            content: [
+                "On-Premise Options: For sensitive agency requirements.",
+                "Data Residency: Guarantees data stays within national borders.",
+                "Encryption: Military-grade security protocols."
+            ],
+            type: "standard",
+            icon: Shield,
+            accent: "text-emerald-400"
+        },
+        {
+            id: 8,
+            title: "Pilot Program",
+            subtitle: "Rapid Deployment Model",
+            content: [
+                "Phase 1: Regional workforce development boards.",
+                "Phase 2: State-level agency integration.",
+                "Phase 3: National rollout across federal departments."
+            ],
+            type: "feature",
+            icon: Rocket,
+            image: "Pilot",
+            accent: "text-blue-400"
+        },
+        {
+            id: 9,
+            title: "Social Impact metrics",
             subtitle: "Measuring Success",
             content: [
                 "GDP Growth: Maximizing workforce utilization.",
@@ -357,7 +522,59 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             accent: "text-pink-400"
         },
         {
-            id: 6,
+            id: 10,
+            title: "Fiscal Responsibility",
+            subtitle: "Maximizing Taxpayer Value",
+            content: [
+                "Cost Reduction: Lowers unemployment benefit dependency.",
+                "Efficiency: Automates labor-intensive matching processes.",
+                "ROI: Positive economic impact within 12 months."
+            ],
+            type: "standard",
+            icon: LineChart,
+            accent: "text-green-400"
+        },
+        {
+            id: 11,
+            title: "Case Study: City of Innovation",
+            subtitle: "Revitalizing Local Economy",
+            content: [
+                "Problem: Tech talent leaving for coastal cities.",
+                "Action: Deployed Loominn to connect locals with remote jobs.",
+                "Outcome: 200+ high-paying remote roles filled locally."
+            ],
+            type: "standard",
+            icon: TrendingUp,
+            accent: "text-orange-400"
+        },
+        {
+            id: 12,
+            title: "Implementation Plan",
+            subtitle: "12-Month Rollout",
+            content: [
+                "Q1: Technical integration & security audit.",
+                "Q2: Pilot launch with select agencies.",
+                "Q3-Q4: Full scale deployment & training."
+            ],
+            type: "standard",
+            icon: Layers,
+            accent: "text-indigo-400"
+        },
+        {
+            id: 13,
+            title: "Future of Work",
+            subtitle: "Policy Alignment",
+            content: [
+                "Skills-Based Hiring: Supporting executive orders.",
+                "AI Readiness: Preparing the workforce for automation.",
+                "Global Competitiveness: Securing national talent advantage."
+            ],
+            type: "standard",
+            icon: Globe,
+            accent: "text-cyan-400"
+        },
+        {
+            id: 14,
             title: "Strategic Vision",
             subtitle: "Public-Private Partnership",
             content: [
