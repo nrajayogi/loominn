@@ -24,7 +24,8 @@ export default function SuggestionNet() {
             return {
                 ...partner,
                 relevance: result.percentage,
-                scoreValue: result.score
+                scoreValue: result.score,
+                breakdown: result.breakdown // Pass breakdown to UI
             };
         }).sort((a, b) => b.scoreValue - a.scoreValue); // Sort by highest match
     }, [userProfile]); // Recalculate when user profile changes
@@ -56,12 +57,36 @@ export default function SuggestionNet() {
                         whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.03)" }}
                         className="bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col items-center text-center group cursor-pointer transition-colors"
                     >
-                        <div className="relative mb-3">
+                        <div className="relative mb-3 group/score">
                             <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-blue-500 to-purple-500">
                                 <img src={user.image} alt={user.name} className="w-full h-full rounded-full object-cover border-2 border-black" />
                             </div>
-                            <div className="absolute -bottom-1 -right-1 bg-zinc-900 text-[10px] font-bold text-green-400 px-1.5 py-0.5 rounded-full border border-zinc-800 shadow-sm" title="AI Relevance Score based on shared skills & projects">
+                            <div className="absolute -bottom-1 -right-1 bg-zinc-900 text-[10px] font-bold text-green-400 px-1.5 py-0.5 rounded-full border border-zinc-800 shadow-sm cursor-help">
                                 {user.relevance}
+                            </div>
+
+                            {/* Score Breakdown Tooltip */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all z-50 pointer-events-none">
+                                <h5 className="text-xs font-bold text-white mb-2 border-b border-white/10 pb-1">Match Breakdown</h5>
+                                <div className="space-y-1 text-[10px] text-zinc-400">
+                                    <div className="flex justify-between">
+                                        <span>Skills</span>
+                                        <span className="text-green-400">+{user.breakdown.skillScore}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Projects</span>
+                                        <span className="text-blue-400">+{user.breakdown.projectScore}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Domain</span>
+                                        <span className="text-purple-400">+{user.breakdown.domainScore}</span>
+                                    </div>
+                                    <div className="border-t border-white/10 pt-1 mt-1 flex justify-between font-bold text-white">
+                                        <span>Total</span>
+                                        <span>{user.scoreValue}</span>
+                                    </div>
+                                </div>
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-zinc-900 border-r border-b border-zinc-700"></div>
                             </div>
                         </div>
 

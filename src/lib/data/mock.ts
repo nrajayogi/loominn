@@ -51,3 +51,20 @@ export const MOCK_USERS_DB: UserProfile[] = [
         projects: ["Startup Launch"]
     },
 ];
+
+// --- Project Metadata Registry (Simulating a Projects Table) ---
+export const PROJECT_REGISTRY: Record<string, { domain: string; industry: string }> = {
+    // Elena's Projects
+    "DeepLearning": { domain: "AI", industry: "Research" },
+    "Eco-Tracker": { domain: "Mobile", industry: "Sustainability" },
+
+    // James's Projects
+    "Loominn Rebuild": { domain: "Web", industry: "SaaS" },
+    "Design System V2": { domain: "Design", industry: "Tools" },
+
+    // Sofia's Projects
+    "Commerce V1": { domain: "Web", industry: "E-commerce" },
+
+    // Marcus's Projects
+    "Startup Launch": { domain: "Business", industry: "Startups" },
+};
