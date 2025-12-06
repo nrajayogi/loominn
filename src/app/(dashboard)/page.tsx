@@ -225,7 +225,8 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="text-lg font-bold text-white mb-1">{item.title}</h3>
+                    <h3 className="text-lg font-bold text-white mb-1">{//@ts-ignore
+                      item.title}</h3>
                     <p className="text-zinc-400 text-sm mb-4">{//@ts-ignore
                       item.description}</p>
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
