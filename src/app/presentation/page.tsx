@@ -110,8 +110,8 @@ export default function PresentationPage() {
                     ].map((mode) => (
                         <Link
                             key={mode.id}
-                            href={`/ presentation ? deck = ${mode.id} `}
-                            className={`text - xs font - mono px - 3 py - 1 rounded - full transition - all ${deckId === mode.id ? 'bg-blue-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/10'} `}
+                            href={`/presentation?deck=${mode.id}`}
+                            className={`text-xs font-mono px-3 py-1 rounded-full transition-all ${deckId === mode.id ? 'bg-blue-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/10'} `}
                         >
                             {mode.label}
                         </Link>
