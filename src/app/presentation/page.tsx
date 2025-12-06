@@ -204,63 +204,66 @@ function PresentationContent() {
                                     )}
                                 </div>
                             ) : slide.type === "skill-score" ? (
-                                <div className="flex flex-col items-center justify-center h-full relative overflow-hidden">
-                                    {/* Animated Background */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 h-full items-center p-8 relative overflow-hidden">
+                                    {/* Background FX */}
                                     <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] animate-pulse" />
+                                    <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-blue-600/20 rounded-full blur-[100px] animate-pulse" />
 
-                                    <div className="relative z-10 flex flex-col items-center">
+                                    {/* Left: The Logic */}
+                                    <div className="flex flex-col items-center lg:items-start space-y-8">
                                         <motion.div
-                                            initial={{ scale: 0.5, opacity: 0 }}
+                                            initial={{ scale: 0.9, opacity: 0 }}
                                             whileInView={{ scale: 1, opacity: 1 }}
-                                            transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
-                                            className="relative"
+                                            className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 p-8 rounded-2xl w-full"
                                         >
-                                            {/* Score Ring */}
-                                            <svg className="w-64 h-64 rotate-[-90deg]">
-                                                <circle cx="128" cy="128" r="120" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-zinc-800" />
-                                                <motion.circle
-                                                    cx="128"
-                                                    cy="128"
-                                                    r="120"
-                                                    stroke="currentColor"
-                                                    strokeWidth="8"
-                                                    fill="transparent"
-                                                    className="text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-                                                    initial={{ pathLength: 0 }}
-                                                    whileInView={{ pathLength: 0.98 }}
-                                                    transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
-                                                />
-                                            </svg>
-                                            {/* Score Number */}
-                                            <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                                <motion.span
-                                                    initial={{ opacity: 0 }}
-                                                    whileInView={{ opacity: 1 }}
-                                                    className="text-7xl font-bold text-white tracking-tighter"
-                                                >
-                                                    98
-                                                </motion.span>
-                                                <span className="text-blue-400 text-sm font-mono uppercase tracking-widest mt-2">Trust Score</span>
+                                            <h3 className="text-zinc-500 font-mono uppercase tracking-widest text-sm mb-6">Algorithm V4.2 Blueprint</h3>
+
+                                            <div className="flex items-center justify-center gap-4 text-2xl md:text-3xl font-bold font-mono text-zinc-300">
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-green-400">Velocity</span>
+                                                    <span className="text-xs text-zinc-500 font-sans font-normal mt-1">Commits/Wk</span>
+                                                </div>
+                                                <span className="text-zinc-600">×</span>
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-purple-400">Complexity</span>
+                                                    <span className="text-xs text-zinc-500 font-sans font-normal mt-1">Code Graph</span>
+                                                </div>
+                                                <span className="text-zinc-600">÷</span>
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-red-400">Risk</span>
+                                                    <span className="text-xs text-zinc-500 font-sans font-normal mt-1">Bug Rate</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="w-full h-px bg-white/10 my-6" />
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-lg text-zinc-400">Trust Score</span>
+                                                <span className="text-4xl font-bold text-white tracking-tighter">98<span className="text-lg text-zinc-600 font-normal">/100</span></span>
                                             </div>
                                         </motion.div>
+                                    </div>
 
-                                        {/* Factors Grid */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl">
-                                            {[
-                                                { label: "Commit Velocity", val: "High", color: "text-green-400" },
-                                                { label: "Code Quality", val: "A+", color: "text-blue-400" },
-                                                { label: "Peer Review", val: "Verified", color: "text-purple-400" }
-                                            ].map((item, i) => (
+                                    {/* Right: The Value */}
+                                    <div className="space-y-8">
+                                        <div>
+                                            <h2 className="text-4xl font-bold text-white mb-2">Quantified Trust</h2>
+                                            <p className="text-xl text-zinc-400 font-light">Why verify manually what can be proven algorithmically?</p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {slide.content?.map((point, i) => (
                                                 <motion.div
                                                     key={i}
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    whileInView={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: 1 + (i * 0.2) }}
-                                                    className="bg-zinc-900/50 border border-white/10 p-6 rounded-xl backdrop-blur-sm text-center"
+                                                    initial={{ x: 20, opacity: 0 }}
+                                                    whileInView={{ x: 0, opacity: 1 }}
+                                                    transition={{ delay: 0.2 + (i * 0.1) }}
+                                                    className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
                                                 >
-                                                    <h4 className="text-zinc-500 text-sm uppercase tracking-wider mb-2">{item.label}</h4>
-                                                    <p className={`text-2xl font-bold ${item.color}`}>{item.val}</p>
+                                                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                                        <Shield size={20} />
+                                                    </div>
+                                                    <span className="text-lg text-zinc-200">{point}</span>
                                                 </motion.div>
                                             ))}
                                         </div>

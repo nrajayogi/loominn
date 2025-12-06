@@ -193,7 +193,11 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             subtitle: "The Risk-Adjusted Skill Score",
             tagline: "Quantifying engineering excellence through algorithmic verification.",
             type: "skill-score",
-            content: ["98/100 Aggregate Trust", "Algorithm V4.2", "12k+ Verified Data Points"],
+            content: [
+                "Eliminates need for technical screening calls.",
+                "Predictable engineering velocity from Day 1.",
+                "De-risked hiring through verified history."
+            ],
             bgGradient: "from-blue-900/40 via-black to-black"
         },
         {
@@ -303,7 +307,11 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             subtitle: "The Risk-Adjusted Skill Score",
             tagline: "Quantifying engineering excellence through algorithmic verification.",
             type: "skill-score",
-            content: ["98/100 Aggregate Trust", "Algorithm V4.2", "12k+ Verified Data Points"],
+            content: [
+                "Eliminates need for technical screening calls.",
+                "Predictable engineering velocity from Day 1.",
+                "De-risked hiring through verified history."
+            ],
             bgGradient: "from-blue-900/40 via-black to-black"
         },
         {
@@ -482,7 +490,11 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             subtitle: "The Risk-Adjusted Skill Score",
             tagline: "Quantifying engineering excellence through algorithmic verification.",
             type: "skill-score",
-            content: ["98/100 Aggregate Trust", "Algorithm V4.2", "12k+ Verified Data Points"],
+            content: [
+                "Eliminates need for technical screening calls.",
+                "Predictable engineering velocity from Day 1.",
+                "De-risked hiring through verified history."
+            ],
             bgGradient: "from-blue-900/40 via-black to-black"
         },
         {
