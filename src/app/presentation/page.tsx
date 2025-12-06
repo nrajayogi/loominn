@@ -46,7 +46,7 @@ export default function PresentationPage() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [nextSlide, prevSlide]);
 
-    const slide = SLIDES[currentSlide];
+    const slide = SLIDES[currentSlide] || SLIDES[0];
 
     const variants = {
         enter: (dir: number) => ({
