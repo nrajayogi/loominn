@@ -7,6 +7,7 @@ import { ChevronRight, ChevronLeft, X, Video, Code, Globe, Zap, Users, Shield, T
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { DECK_VARIANTS, SlideData } from "@/lib/data/presentation-decks";
+import FounderContactWidget from "@/components/presentation/FounderContactWidget";
 
 export default function PresentationPage() {
     const searchParams = useSearchParams();
@@ -327,6 +328,8 @@ export default function PresentationPage() {
                     </AnimatePresence>
                 </div >
             </div >
+
+            <FounderContactWidget deckId={deckId} />
 
 
         </div >
