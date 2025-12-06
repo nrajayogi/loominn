@@ -1,12 +1,4 @@
-export interface ProfileData {
-    skills: string[];
-    projects: string[];
-}
-
-export interface PartnerData extends ProfileData {
-    id: number | string;
-    [key: string]: any; // Allow other properties
-}
+import { UserProfile } from "@/lib/types/schema";
 
 export interface RelevanceResult {
     score: number;       // Raw score
@@ -31,8 +23,8 @@ export interface RelevanceResult {
  * @returns Object containing score, formatted percentage, and matched items.
  */
 export function calculateRelevanceScore(
-    userProfile: ProfileData | null,
-    partnerProfile: PartnerData
+    userProfile: UserProfile | null,
+    partnerProfile: UserProfile
 ): RelevanceResult {
     // Default fallback if no user profile is loaded
     if (!userProfile) {

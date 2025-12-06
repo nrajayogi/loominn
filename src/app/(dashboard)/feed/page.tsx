@@ -89,13 +89,8 @@ export default function FeedPage() {
                 <StoriesRail />
             </div>
 
-            {/* Creative Connection Discovery */}
-            <div className="mb-2">
-                <SuggestionNet />
-            </div>
-
-            {/* Search & Filter */}
-            <div className="flex gap-3 sticky top-[73px] bg-black/80 backdrop-blur-xl py-2 -mx-4 px-4 z-30">
+            {/* Search & Filter - Moved Above Orbit */}
+            <div className="flex gap-3 mb-6">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
                     <input
@@ -103,13 +98,20 @@ export default function FeedPage() {
                         placeholder="Search updates..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-zinc-600"
                     />
                 </div>
-                <button className="p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors" aria-label="Filter">
+                <button className="px-3 rounded-xl bg-black/40 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center cursor-pointer" aria-label="Filter">
                     <Filter size={18} />
                 </button>
             </div>
+
+            {/* Creative Connection Discovery */}
+            <div className="mb-6">
+                <SuggestionNet />
+            </div>
+
+
 
             {/* Feed Stream */}
             <div className="space-y-6">

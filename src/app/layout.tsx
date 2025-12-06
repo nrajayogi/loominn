@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 import ChatSystem from "@/components/chat/ChatSystem";
+import PresentationFloater from "@/components/layout/PresentationFloater";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <ChatSystem />
+          <PresentationFloater />
         </Providers>
       </body>
     </html>

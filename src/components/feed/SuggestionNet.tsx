@@ -1,60 +1,24 @@
 import { useState, useMemo } from "react";
-import { Plus, UserPlus, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { Plus, Zap, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import { calculateRelevanceScore } from "@/lib/ai/relevance";
-
-// Potential Partners Database with Rich Data for "AI" Matching
-const POTENTIAL_PARTNERS = [
-    {
-        id: 1,
-        name: "Elena R.",
-        role: "AI Researcher",
-        company: "DeepMind",
-        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
-        skills: ["AI", "Machine Learning", "Python", "Research"],
-        projects: ["DeepLearning", "Eco-Tracker"]
-    },
-    {
-        id: 2,
-        name: "James K.",
-        role: "Product Design",
-        company: "Airbnb",
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80",
-        skills: ["UI/UX", "Design Systems", "Figma", "React"],
-        projects: ["Loominn Rebuild", "Design System V2"]
-    },
-    {
-        id: 3,
-        name: "Sofia L.",
-        role: "Frontend Dev",
-        company: "Vercel",
-        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80",
-        skills: ["React", "Next.js", "TypeScript", "Performance"],
-        projects: ["Commerce V1"]
-    },
-    {
-        id: 4,
-        name: "Marcus T.",
-        role: "CTO",
-        company: "StartUp",
-        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80",
-        skills: ["Leadership", "Cloud Architecture", "Go", "AI"],
-        projects: ["Startup Launch"]
-    },
-];
+import { MOCK_USERS_DB } from "@/lib/data/mock";
+import { UserProfile } from "@/lib/types/schema";
 
 export default function SuggestionNet() {
     const { userProfile } = useGlobalState();
-    const [connected, setConnected] = useState<number[]>([]);
+    const [connected, setConnected] = useState<Record<string, string>>({});
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-    const handleConnect = (id: number) => {
-        setConnected(prev => [...prev, id]);
+    const handleConnect = (id: number | string, type: string = "Partner") => {
+        setConnected(prev => ({ ...prev, [String(id)]: type }));
+        setOpenDropdown(null);
     };
 
     // "AI" Relevance Algorithm
     const suggestions = useMemo(() => {
-        return POTENTIAL_PARTNERS.map(partner => {
+        return MOCK_USERS_DB.map(partner => {
             const result = calculateRelevanceScore(userProfile, partner);
 
             return {
@@ -66,7 +30,7 @@ export default function SuggestionNet() {
     }, [userProfile]); // Recalculate when user profile changes
 
     return (
-        <div className="w-full bg-zinc-900/30 border border-white/5 rounded-2xl p-6 relative overflow-hidden">
+        <div className="w-full bg-zinc-900/30 border border-white/5 rounded-2xl p-6 relative">
             {/* Background Grid FX */}
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
@@ -104,19 +68,74 @@ export default function SuggestionNet() {
                         <h4 className="text-white font-bold text-sm mb-0.5">{user.name}</h4>
                         <p className="text-zinc-400 text-xs mb-3">{user.role} <br /><span className="opacity-50">at {user.company}</span></p>
 
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleConnect(user.id);
-                            }}
-                            disabled={connected.includes(user.id)}
-                            className={`w-full py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${connected.includes(user.id)
-                                ? "bg-green-500/10 text-green-500 border border-green-500/20"
-                                : "bg-white/10 hover:bg-white/20 text-white"
-                                }`}
-                        >
-                            {connected.includes(user.id) ? "Partnered" : <><UserPlus size={12} /> Partner</>}
-                        </button>
+                        <div className="relative w-full">
+                            {!connected[String(user.id)] ? (
+                                <div className="flex w-full group">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleConnect(user.id as number | string, "Partner");
+                                        }}
+                                        className="flex-1 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-l-lg text-xs font-bold flex items-center justify-center gap-1 transition-all border-r border-black/20"
+                                    >
+                                        <Plus size={12} /> Partner
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenDropdown(openDropdown === String(user.id) ? null : String(user.id));
+                                        }}
+                                        className={`px-2 bg-white/10 hover:bg-white/20 text-white rounded-r-lg transition-all ${openDropdown === String(user.id) ? "bg-white/20" : ""}`}
+                                        aria-label="More connection options"
+                                    >
+                                        <ChevronDown size={12} className={`transition-transform duration-200 ${openDropdown === String(user.id) ? "rotate-180" : ""}`} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-green-500/10 text-green-500 border border-green-500/20 cursor-default"
+                                >
+                                    {connected[String(user.id)]}
+                                </motion.button>
+                            )}
+
+                            {/* Creative Floating Dropdown */}
+                            <AnimatePresence>
+                                {openDropdown === String(user.id) && !connected[String(user.id)] && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                        className="absolute top-full right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <div className="p-1.5 space-y-0.5">
+                                            {[
+                                                { type: "Partner", desc: "Collaborate on projects" },
+                                                { type: "Colleague", desc: "Professional peer" },
+                                                { type: "Ally", desc: "Supportive connection" }
+                                            ].map((option) => (
+                                                <button
+                                                    key={option.type}
+                                                    onClick={() => handleConnect(user.id as number | string, option.type)}
+                                                    className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors group/item"
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-white group-hover/item:text-blue-400 transition-colors">{option.type}</span>
+                                                        {option.type === "Partner" && <Zap size={12} className="text-yellow-500 opacity-0 group-hover/item:opacity-100 transition-opacity" />}
+                                                    </div>
+                                                    <span className="text-[10px] text-zinc-500">{option.desc}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </motion.div>
                 ))}
             </div>

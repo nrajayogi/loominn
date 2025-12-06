@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Camera, LogOut } from "lucide-react";
+import { X, Camera, LogOut, MapPin, Globe } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 interface EditProfileModalProps {
@@ -13,16 +13,23 @@ interface EditProfileModalProps {
         bio: string;
         location: string;
         image?: string;
+        accountOrigin?: string;
     };
-    onSave: (data: { name: string; bio: string; location: string; image?: string }) => void;
+    privacySettings: {
+        locationTracking: boolean;
+    };
+    onSave: (data: { name: string; bio: string; location: string; image?: string; accountOrigin?: string }) => void;
+    onSavePrivacy: (data: { locationTracking: boolean }) => void;
 }
 
-export default function EditProfileModal({ isOpen, onClose, userData, onSave }: EditProfileModalProps) {
+export default function EditProfileModal({ isOpen, onClose, userData, privacySettings, onSave, onSavePrivacy }: EditProfileModalProps) {
     const [formData, setFormData] = useState(userData);
+    const [privacyData, setPrivacyData] = useState(privacySettings);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave(formData);
+        onSavePrivacy(privacyData);
         onClose();
     };
 
@@ -126,6 +133,47 @@ export default function EditProfileModal({ isOpen, onClose, userData, onSave }: 
                                         className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
                                         placeholder="City, Country"
                                     />
+                                </div>
+
+                                {/* Privacy Section */}
+                                <div className="pt-4 border-t border-white/5">
+                                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Privacy & Visibility</h3>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-2 bg-zinc-800 rounded-lg text-zinc-400">
+                                                    <MapPin size={16} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-white">Show Exact Location</p>
+                                                    <p className="text-xs text-zinc-500">Visible on profile & new posts</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPrivacyData({ ...privacyData, locationTracking: !privacyData.locationTracking })}
+                                                className={`relative w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${privacyData.locationTracking ? 'bg-blue-600' : 'bg-zinc-700'}`}
+                                                aria-label="Toggle location tracking"
+                                            >
+                                                <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ease-in-out ${privacyData.locationTracking ? 'translate-x-4' : 'translate-x-0'}`} />
+                                            </button>
+                                        </div>
+
+                                        <div className="animate-in fade-in slide-in-from-top-2 p-3 bg-zinc-800/50 rounded-xl border border-white/5">
+                                            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                                Account Origin <span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/20">System Detected</span>
+                                            </label>
+                                            <div className="flex items-center gap-2 text-zinc-400">
+                                                <Globe size={14} />
+                                                <span className="text-sm font-medium text-white">{userData.accountOrigin || "Detecting..."}</span>
+                                                <span className="text-[10px] bg-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded ml-auto">Immutable</span>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-500 mt-2">
+                                                This location was permanently recorded at account creation. Security protocols prevent modification.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

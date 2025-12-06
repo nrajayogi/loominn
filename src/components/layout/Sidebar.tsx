@@ -13,7 +13,8 @@ import {
     Bookmark,
     Clock,
     Settings,
-    Plus
+    Plus,
+    Projector
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -27,6 +28,7 @@ const navItems = [
     { icon: Users, label: "Partners", href: "/network" },
     { icon: Bookmark, label: "Bookmarks", href: "/bookmarks" },
     { icon: Clock, label: "History", href: "/history" },
+    { icon: Projector, label: "Presentation", href: "/presentation" },
 ];
 
 export function Sidebar() {

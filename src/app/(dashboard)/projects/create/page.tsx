@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PenTool, Layout, Image as ImageIcon, Send, Rocket, Sparkles, FolderPlus, FileText, ChevronRight } from "lucide-react";
+import { PenTool, Layout, Image as ImageIcon, Send, Rocket, Sparkles, FolderPlus, FileText, ChevronRight, Video } from "lucide-react";
 import ProjectWizard from "@/components/projects/ProjectWizard";
 import { useGlobalState } from "@/context/GlobalStateContext";
 
 export default function CreativeStudio() {
-    const { addPost } = useGlobalState();
+    const { addPost, updateUserProfile } = useGlobalState();
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [draftContent, setDraftContent] = useState("");
     const [isUploading, setIsUploading] = useState(false);
+    const [vResumeUploading, setVResumeUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const handlePost = () => {
@@ -152,6 +153,36 @@ export default function CreativeStudio() {
                             <h3 className="font-bold text-white">Add to Portfolio</h3>
                         </div>
                         <p className="text-sm text-zinc-500">Upload finished work to your profile showcase.</p>
+                    </div>
+
+                    {/* vResume Card */}
+                    <div
+                        onClick={() => {
+                            if (vResumeUploading) return;
+                            setVResumeUploading(true);
+                            // Simulate upload
+                            setTimeout(() => {
+                                updateUserProfile({ vResume: "https://example.com/demo-vresume.mp4" });
+                                setVResumeUploading(false);
+                                alert("vResume Updated Successfully!"); // Simple feedback for now
+                            }, 2000);
+                        }}
+                        className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 cursor-pointer hover:border-white/20 transition-colors group relative overflow-hidden"
+                    >
+                        {vResumeUploading && (
+                            <div className="absolute inset-0 bg-black/60 z-10 flex items-center justify-center">
+                                <div className="text-white text-xs font-bold animate-pulse flex items-center gap-2">
+                                    <Video size={14} /> Uploading...
+                                </div>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-red-500/10 rounded-lg text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                <Video size={18} />
+                            </div>
+                            <h3 className="font-bold text-white">Update vResume</h3>
+                        </div>
+                        <p className="text-sm text-zinc-500">Upload or record a new video resume for your profile.</p>
                     </div>
                 </div>
             </div>

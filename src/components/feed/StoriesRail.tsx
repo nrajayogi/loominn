@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Plus, X, Heart, Send, Briefcase, FileText, CheckCircle2, Clock, Camera } from "lucide-react";
+import { Plus, X, Heart, Send, Briefcase, FileText, CheckCircle2, Clock, Camera, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalState } from "@/context/GlobalStateContext";
+import { Perspective, PerspectiveStatus, PerspectiveItemType } from "@/lib/types/schema";
 
 // Initial mock data removed - now in global state
 
@@ -14,6 +15,9 @@ export default function StoriesRail() {
     const [isCreating, setIsCreating] = useState(false);
     const [newPerspectiveContent, setNewPerspectiveContent] = useState("");
     const [newPerspectiveImage, setNewPerspectiveImage] = useState("");
+    const [includeLocation, setIncludeLocation] = useState(true);
+
+
 
     // Camera State
     const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -69,11 +73,12 @@ export default function StoriesRail() {
             role: userProfile.bio?.split("•")[0]?.trim() || "Member",
             userImage: userProfile.image,
             title: newPerspectiveContent.substring(0, 30) + (newPerspectiveContent.length > 30 ? "..." : ""),
-            status: "Perspective",
+            location: includeLocation ? userProfile.location : (userProfile.accountOrigin || "United States"),
+            status: "Perspective" as PerspectiveStatus,
             items: [
                 {
                     id: `bi-${Date.now()}`,
-                    type: newPerspectiveImage ? "image" : "text",
+                    type: (newPerspectiveImage ? "image" : "text") as PerspectiveItemType,
                     content: newPerspectiveContent,
                     url: newPerspectiveImage,
                     background: "bg-zinc-900 border border-blue-500/30",
@@ -183,6 +188,7 @@ export default function StoriesRail() {
                                     </p>
                                     <p className="text-[10px] text-zinc-500 truncate">
                                         {brief.userId === 'u-current' ? (userProfile.bio?.split("•")[0]?.trim() || "Member") : brief.role}
+                                        {brief.location && <span className="ml-1">• {brief.location}</span>}
                                     </p>
                                 </div>
                             </div>
@@ -274,6 +280,20 @@ export default function StoriesRail() {
                                 </button>
                             </div>
 
+                            {/* Location Toggle */}
+                            <div className="flex items-center justify-between mb-6 px-1">
+                                <div className="flex items-center gap-2 text-zinc-400">
+                                    <MapPin size={16} />
+                                    <span className="text-sm">Share Location</span>
+                                </div>
+                                <button
+                                    onClick={() => setIncludeLocation(!includeLocation)}
+                                    className={`relative w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${includeLocation ? 'bg-blue-600' : 'bg-zinc-700'}`}
+                                >
+                                    <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ease-in-out ${includeLocation ? 'translate-x-4' : 'translate-x-0'}`} />
+                                </button>
+                            </div>
+
                             <div className="flex justify-end gap-3">
                                 <button onClick={() => { setIsCreating(false); stopCamera(); }} className="px-4 py-2 text-zinc-400 hover:text-white font-medium">Cancel</button>
                                 <button
@@ -329,6 +349,7 @@ export default function StoriesRail() {
                                         </h3>
                                         <p className="text-zinc-400 text-xs">
                                             {perspectives[selectedBriefIndex].userId === 'u-current' ? (userProfile.bio?.split("•")[0]?.trim() || "Member") : perspectives[selectedBriefIndex].role}
+                                            {perspectives[selectedBriefIndex].location && <span> • {perspectives[selectedBriefIndex].location}</span>}
                                         </p>
                                     </div>
                                 </div>

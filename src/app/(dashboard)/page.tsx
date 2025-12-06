@@ -8,7 +8,7 @@ import { useGlobalState } from "@/context/GlobalStateContext";
 import StoriesRail from "@/components/feed/StoriesRail";
 
 import { motion } from "framer-motion";
-import { Heart, MessageSquare, ArrowUpRight, Zap, Star } from "lucide-react";
+import { Heart, MessageSquare, ArrowUpRight, Zap, Star, Projector } from "lucide-react";
 
 const SPOTLIGHT_PROJECT = {
   title: "NeuroLink AI Interface",
@@ -103,10 +103,10 @@ export default function Home() {
         <div className="w-24 h-24 flex items-center justify-center">
           <img src="/logo.png" alt="Loominn" className="w-full h-full object-contain drop-shadow-2xl" />
         </div>
-      </Link>
+      </Link >
 
       {/* Project Spotlight (The USP) */}
-      <section className="relative h-[60vh] w-full rounded-none overflow-hidden group cursor-pointer">
+      < section className="relative h-[60vh] w-full rounded-none overflow-hidden group cursor-pointer" >
         <div className="absolute inset-0 bg-black/20 z-10 group-hover:bg-black/10 transition-colors duration-500" />
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
@@ -160,15 +160,15 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </section >
 
       {/* Stories Rail */}
-      <section className="px-4 md:px-8 max-w-7xl mx-auto z-40 relative">
+      < section className="px-4 md:px-8 max-w-7xl mx-auto z-40 relative" >
         <StoriesRail />
-      </section>
+      </section >
 
       {/* Mosaic Feed */}
-      <section className="px-4 md:px-8 max-w-7xl mx-auto">
+      < section className="px-4 md:px-8 max-w-7xl mx-auto" >
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-white">Trending Now</h2>
           <div className="flex gap-2">
@@ -257,7 +257,7 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }

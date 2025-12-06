@@ -3,55 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
-interface UserProfile {
-    name: string;
-    bio: string;
-    location: string;
-    image: string;
-    coverImage: string;
-    coverSettings?: {
-        hue: number;
-        positionY: number;
-        enableOverlay: boolean;
-        gradient: string;
-    };
-    skills: string[];
-    projects: string[];
-    email?: string;
-}
-
-interface Post {
-    id: number;
-    content: string;
-    time: string;
-    likes: number;
-    comments: number;
-    shares: number;
-}
-
-interface Perspective {
-    id: string;
-    userId: string;
-    userName: string;
-    role: string;
-    userImage: string;
-    title: string;
-    status: string;
-    items: {
-        id: string;
-        type: string;
-        content?: string;
-        url?: string;
-        caption?: string;
-        background?: string;
-        duration: number;
-    }[];
-}
-
-interface PrivacySettings {
-    locationTracking: boolean;
-    originCountry: string;
-}
+import { UserProfile, Post, Perspective, PrivacySettings } from "@/lib/types/schema";
 
 interface GlobalState {
     userProfile: UserProfile;
@@ -66,8 +18,7 @@ interface GlobalState {
 }
 
 const defaultPrivacySettings: PrivacySettings = {
-    locationTracking: true,
-    originCountry: "United States"
+    locationTracking: true
 };
 const defaultProfile: UserProfile = {
     name: "Rajayogi Nandina",
@@ -83,7 +34,9 @@ const defaultProfile: UserProfile = {
     },
     skills: ["React", "TypeScript", "UI/UX", "AI"],
     projects: ["Loominn Rebuild", "Eco-Tracker"],
-    email: ""
+    email: "",
+    accountOrigin: "",
+    vResume: ""
 };
 
 const initialPosts: Post[] = [
@@ -191,13 +144,22 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
                     coverSettings: defaultProfile.coverSettings,
                     skills: defaultProfile.skills,
                     projects: defaultProfile.projects,
-                    email: sessionEmail
+                    email: sessionEmail,
+                    accountOrigin: "Netherlands" // Simulate detection for new session
                 };
                 setUserProfile(newProfile);
                 localStorage.setItem("loominn_profile", JSON.stringify(newProfile));
             }
         }
     }, [session, userProfile.email]);
+
+    // Simulate system tracking for origin if missing (e.g. fresh load without session)
+    useEffect(() => {
+        if (!userProfile.accountOrigin) {
+            // In a real app, this would come from a GeoIP lookup
+            setUserProfile(prev => ({ ...prev, accountOrigin: "Netherlands" }));
+        }
+    }, [userProfile.accountOrigin]);
 
     const updateUserProfile = (data: Partial<UserProfile>) => {
         setUserProfile(prev => {

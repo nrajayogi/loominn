@@ -34,7 +34,7 @@ const USER_PROJECTS = [
 
 export default function ProfilePage() {
     const { data: session } = useSession();
-    const { userProfile, updateUserProfile, posts, addPost, toggleLike } = useGlobalState();
+    const { userProfile, updateUserProfile, posts, addPost, toggleLike, privacySettings, updatePrivacySettings } = useGlobalState();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // Local state
@@ -143,16 +143,29 @@ export default function ProfilePage() {
                                 <h1 className="text-3xl md:text-5xl font-bold text-white mb-1">{userProfile.name}</h1>
                                 <p className="text-zinc-300 text-lg mb-1">{userProfile.bio}</p>
                                 <div className="flex items-center gap-2 text-zinc-400 text-sm">
-                                    <span className="bg-white/10 px-2 py-0.5 rounded text-xs text-zinc-300 uppercase tracking-wider font-bold">Location</span>
-                                    {isLiveLocation && (
-                                        <span className="relative flex h-2 w-2 mx-1">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                        </span>
+                                    {privacySettings?.locationTracking ? (
+                                        <>
+                                            <span className="bg-white/10 px-2 py-0.5 rounded text-xs text-zinc-300 uppercase tracking-wider font-bold">Location</span>
+                                            {isLiveLocation && (
+                                                <span className="relative flex h-2 w-2 mx-1">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                                </span>
+                                            )}
+                                            <span className={isLiveLocation ? "text-green-400 font-medium" : ""}>
+                                                {userProfile.location}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="bg-white/10 px-2 py-0.5 rounded text-xs text-zinc-300 uppercase tracking-wider font-bold">Based In</span>
+                                            <span className="text-zinc-300">
+                                                {userProfile.accountOrigin || "United States"}
+                                            </span>
+                                        </>
                                     )}
-                                    <span className={isLiveLocation ? "text-green-400 font-medium" : ""}>
-                                        {userProfile.location}
-                                    </span>
+                                    <span className="mx-2 text-zinc-600">•</span>
+                                    <span className="text-zinc-500 text-xs">Account created in {userProfile.accountOrigin || "United States"}</span>
                                 </div>
                             </div>
                         </div>
@@ -290,7 +303,9 @@ export default function ProfilePage() {
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 userData={userProfile}
+                privacySettings={privacySettings}
                 onSave={(data) => updateUserProfile(data)}
+                onSavePrivacy={(data) => updatePrivacySettings(data)}
             />
 
             {/* Bento Grid Layout */}
