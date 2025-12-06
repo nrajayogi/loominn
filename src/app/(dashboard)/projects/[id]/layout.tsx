@@ -15,15 +15,17 @@ const TABS = [
     { label: "Files", href: "/files" },
 ];
 
+import { use } from "react";
+
 export default function ProjectLayout({
     children,
     params
 }: {
     children: React.ReactNode;
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
     const pathname = usePathname();
-    const projectId = params.id;
+    const { id: projectId } = use(params);
     const baseUrl = `/projects/${projectId}`;
 
     return (
