@@ -7,11 +7,17 @@ import { useSession } from "next-auth/react";
 
 type ChatTab = "projects" | "messages";
 
+import { usePathname } from "next/navigation";
+
 export default function ChatSystem() {
     const { data: session } = useSession();
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<ChatTab>("messages");
     const [activeConversation, setActiveConversation] = useState<number | null>(null);
+
+    // Don't show on presentation pages
+    if (pathname?.startsWith("/presentation")) return null;
 
     if (!session) return null;
 
