@@ -1,0 +1,372 @@
+import {
+    Shield,
+    TrendingUp,
+    Globe,
+    Zap,
+    Video,
+    Code,
+    Rocket,
+    Users,
+    Layers,
+    Building2,
+    Landmark,
+    Briefcase,
+    LineChart
+} from "lucide-react";
+
+export type SlideType = 'hero' | 'standard' | 'feature';
+
+export interface SlideData {
+    id: number;
+    title: string;
+    subtitle: string;
+    tagline?: string;
+    content?: string[];
+    quote?: string;
+    type: SlideType;
+    icon?: any;
+    image?: string;
+    accent?: string;
+    bgGradient?: string;
+    citation?: string;
+    citationLink?: string;
+}
+
+export const DECK_VARIANTS: Record<string, SlideData[]> = {
+    standard: [
+        {
+            id: 1,
+            title: "LOOMINN",
+            subtitle: "The Future of Meritocratic Talent",
+            tagline: "Don't tell us what you did. Show us what you built.",
+            type: "hero",
+            bgGradient: "from-blue-950 via-black to-black"
+        },
+        {
+            id: 2,
+            title: "The Problem",
+            subtitle: "The Resume Trust Crisis",
+            content: [
+                "Static & Verify-Last: Resumes are text claims, not proof.",
+                "Signal-to-Noise: 80% of hiring time is filtering.",
+                "Credential Wall: Talent hidden behind missing keywords."
+            ],
+            quote: "\"The resume looks great, but they can't code.\" — Every Hiring Manager",
+            type: "standard",
+            icon: Shield,
+            accent: "text-red-400",
+            citation: "Kline, P., Rose, E., & Walters, C. (2021). Systemic Discrimination Among Large U.S. Employers. NBER Working Paper No. 29053.",
+            citationLink: "https://www.nber.org/papers/w29053"
+        },
+        {
+            id: 3,
+            title: "The Cost",
+            subtitle: "The 'HR Infrastructure' Black Hole",
+            content: [
+                "Bloated Tech Stack: Expensive ATS & Screening tools.",
+                "Human Cost: Thousands of hours on screening.",
+                "Turnover Tax: Bad hires cost 30% of annual salary."
+            ],
+            type: "standard",
+            icon: TrendingUp,
+            accent: "text-orange-400",
+            citation: "U.S. Department of Labor. (2023). Cost of a Bad Hire Report. Estimated at 30% of employee's first-year earnings.",
+            citationLink: "https://www.dol.gov"
+        },
+        {
+            id: 4,
+            title: "The Bias",
+            subtitle: "The Opportunity Gap",
+            content: [
+                "Geography ≠ Destiny: Remote talent is often invisible.",
+                "Paper Bias: Prestige over Output.",
+                "Upskilling Disconnect: Talent guesses what to learn."
+            ],
+            type: "standard",
+            icon: Globe,
+            accent: "text-yellow-400",
+            citation: "Bloom, N., et al. (2023). Hybrid Working From Home Works Out. NBER Working Paper; Nature (Trip.com study).",
+            citationLink: "https://www.nature.com/articles/s41586-024-07500-2"
+        },
+        {
+            id: 5,
+            title: "The Solution",
+            subtitle: "Loominn: Verified Talent Protocol",
+            content: [
+                "Proof-of-Work: Output defines rank, not claims.",
+                "Holistic Profile: vResume (Soft) + Commits (Hard).",
+                "Trust-First: Verification happens BEFORE you see them."
+            ],
+            type: "standard",
+            icon: Zap,
+            accent: "text-blue-400"
+        },
+        {
+            id: 6,
+            title: "vResume",
+            subtitle: "Decentralizing Personality",
+            content: [
+                "Dynamic Video Intro: Soft skills & passion on display.",
+                "Gut Check: Assess fit in 30 seconds.",
+                "Bypass Bias: Speak directly to decision makers."
+            ],
+            type: "feature",
+            icon: Video,
+            image: "vResume",
+            accent: "text-purple-400"
+        },
+        {
+            id: 7,
+            title: "Commit Ledger",
+            subtitle: "The New Currency of Hiring",
+            content: [
+                "Metric: Projects Shipped > Years of Experience.",
+                "Verification: Collaborative history is tracked.",
+                "Meritocracy: You can't inflate a commit ledger."
+            ],
+            type: "feature",
+            icon: Code,
+            image: "Ledger",
+            accent: "text-green-400"
+        },
+        {
+            id: 8,
+            title: "Orbit Engine",
+            subtitle: "AI-Driven Discovery",
+            content: [
+                "Capability Matching: Finds talent by verified output.",
+                "The Graph: Connects skills automatically.",
+                "Zero-Search: Talent 'Orbits' into view."
+            ],
+            type: "feature",
+            icon: Rocket,
+            image: "Orbit",
+            accent: "text-cyan-400"
+        },
+        {
+            id: 9,
+            title: "Business Value",
+            subtitle: "Reducing Infrastructure Costs",
+            content: [
+                "Slash Screening: Loominn acts as the primary filter.",
+                "Lean HR: Enterprise-grade scouting for startups.",
+                "Pay-for-Performance: Secure talent, don't just post ads."
+            ],
+            type: "standard",
+            icon: TrendingUp,
+            accent: "text-emerald-400"
+        },
+        {
+            id: 10,
+            title: "Social Impact",
+            subtitle: "Equal Opportunity",
+            content: [
+                "Blind Evaluation: Code has no gender or geography.",
+                "The Great Equalizer: Output over Ivy League degrees.",
+                "Global Access: A stage for anyone who builds."
+            ],
+            type: "standard",
+            icon: Users,
+            accent: "text-pink-400"
+        },
+        {
+            id: 11,
+            title: "Market Validation",
+            subtitle: "Why Now?",
+            content: [
+                "Gig Economy: Shift to Project-Based work.",
+                "Remote Trust: Geography is irrelevant, trust is key.",
+                "AI Disruption: Human judgment & shipping is premium."
+            ],
+            type: "standard",
+            icon: Layers,
+            accent: "text-indigo-400",
+            citation: "World Economic Forum. (2025). The Future of Jobs Report 2025. Skill gaps cited as top barrier to transformation.",
+            citationLink: "https://www.weforum.org/publications/the-future-of-jobs-report-2023/"
+        },
+        {
+            id: 12,
+            title: "The Vision",
+            subtitle: "Building the Standard",
+            content: [
+                "Vision: 'Loominn Verified' as the global credential.",
+                "Ask: Join us in building the infrastructure.",
+                "Investment: Scaling the Orbit Engine."
+            ],
+            type: "hero",
+            bgGradient: "from-indigo-950 via-purple-950 to-black"
+        }
+    ],
+    company: [
+        {
+            id: 1,
+            title: "LOOMINN",
+            subtitle: "Enterprise Talent Infrastructure",
+            tagline: "Precision Hiring. Zero Noise. Verified Output.",
+            type: "hero",
+            bgGradient: "from-slate-900 via-zinc-900 to-black"
+        },
+        {
+            id: 2,
+            title: "The Enterprise Drain",
+            subtitle: "The High Cost of Uncertainty",
+            content: [
+                "Financial Leakage: Bad hires cost 30% of annual salary.",
+                "Time Sink: 42 days average time-to-fill for tech roles.",
+                "Ghost Hours: Senior engineers waste weeks interviewing unverified candidates."
+            ],
+            type: "standard",
+            icon: Briefcase,
+            accent: "text-red-400",
+            citation: "U.S. Department of Labor. (2023). Cost of a Bad Hire Report.",
+            citationLink: "https://www.dol.gov"
+        },
+        {
+            id: 3,
+            title: "The Solution",
+            subtitle: "Verify-First Protocol",
+            content: [
+                "Invert the Funnel: Verify skills BEFORE the interview.",
+                "Algorithmic Match: 95% reduction in screening time.",
+                "Risk Mitigation: 'Commit Ledger' proves technical capability."
+            ],
+            type: "standard",
+            icon: Shield,
+            accent: "text-blue-400"
+        },
+        {
+            id: 4,
+            title: "vResume",
+            subtitle: "Cultural De-Risking",
+            content: [
+                "Efficiency: Evaluate soft skills in 30 seconds, not 30 minutes.",
+                "Team Fit: See the person behind the code immediately.",
+                "Consistency: Standardized format for rapid comparison."
+            ],
+            type: "feature",
+            icon: Video,
+            image: "vResume",
+            accent: "text-purple-400"
+        },
+        {
+            id: 5,
+            title: "Commit Ledger",
+            subtitle: "Technical Assurance",
+            content: [
+                "Immutable Proof: Code history that cannot be faked.",
+                "Velocity Tracking: Know how fast they ship.",
+                "Collaboration Graph: See how they work with teams."
+            ],
+            type: "feature",
+            icon: Code,
+            image: "Ledger",
+            accent: "text-green-400"
+        },
+        {
+            id: 6,
+            title: "Business Impact",
+            subtitle: "Operational Efficiency",
+            content: [
+                "Speed: Reduce time-to-hire by 60%.",
+                "Cost: Eliminate reliance on external agencies.",
+                "Retention: Verified skills + culture fit = longer tenure."
+            ],
+            type: "standard",
+            icon: LineChart,
+            accent: "text-emerald-400",
+            citation: "Bloom, N., et al. (2023). Hybrid Working From Home Works Out.",
+            citationLink: "https://www.nature.com/articles/s41586-024-07500-2"
+        },
+        {
+            id: 7,
+            title: "Partnership Choice",
+            subtitle: "Why Loominn?",
+            content: [
+                "Integration: API-first design for your existing ATS.",
+                "Scale: Handle 10 or 10,000 applicants with equal ease.",
+                "Security: Enterprise-grade data protection."
+            ],
+            type: "hero",
+            bgGradient: "from-emerald-950 via-slate-950 to-black"
+        }
+    ],
+    gov: [
+        {
+            id: 1,
+            title: "LOOMINN",
+            subtitle: "National Talent Infrastructure",
+            tagline: "Empowering the Workforce of Tomorrow.",
+            type: "hero",
+            bgGradient: "from-blue-900 via-slate-900 to-black"
+        },
+        {
+            id: 2,
+            title: "The Public Challenge",
+            subtitle: "Unlocking Human Capital",
+            content: [
+                "Regional Disparity: Talent exists outside major hubs.",
+                "Credential Barriers: Skills > Degrees for modern economy.",
+                "Workforce Agility: Rapidly reskilling for the AI age."
+            ],
+            type: "standard",
+            icon: Landmark,
+            accent: "text-orange-400",
+            citation: "World Economic Forum. (2025). The Future of Jobs Report 2025.",
+            citationLink: "https://www.weforum.org/publications/the-future-of-jobs-report-2023/"
+        },
+        {
+            id: 3,
+            title: "The Solution",
+            subtitle: "Meritocratic Infrastructure",
+            content: [
+                "Universal Access: A platform based on output, not pedigree.",
+                "Bias Elimination: Algorithmic matching ignores demographics.",
+                "Economic Mobility: Connecting rural talent to global roles."
+            ],
+            type: "standard",
+            icon: Building2,
+            accent: "text-blue-400",
+            citation: "Kline, P., et al. (2021). Systemic Discrimination.",
+            citationLink: "https://www.nber.org/papers/w29053"
+        },
+        {
+            id: 4,
+            title: "Orbit Engine",
+            subtitle: "The Great Equalizer",
+            content: [
+                "Objectivity: Matches skills to needs without bias.",
+                "Visibility: Highlights overlooked talent pools.",
+                "Efficiency: Reduces unemployment friction."
+            ],
+            type: "feature",
+            icon: Globe,
+            image: "Orbit",
+            accent: "text-cyan-400"
+        },
+        {
+            id: 5,
+            title: "Social Impact",
+            subtitle: "Measuring Success",
+            content: [
+                "GDP Growth: Maximizing workforce utilization.",
+                "Diversity: Naturally diverse outcomes via blind merit.",
+                "Resilience: A workforce adaptable to technological change."
+            ],
+            type: "standard",
+            icon: Users,
+            accent: "text-pink-400"
+        },
+        {
+            id: 6,
+            title: "Strategic Vision",
+            subtitle: "Public-Private Partnership",
+            content: [
+                "Policy: Adopting skills-based hiring standards.",
+                "Education: Aligning training with real-time market data.",
+                "Adoption: Government as a model employer."
+            ],
+            type: "hero",
+            bgGradient: "from-blue-950 via-indigo-950 to-black"
+        }
+    ]
+};
