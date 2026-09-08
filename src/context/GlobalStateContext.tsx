@@ -59,6 +59,10 @@ interface GlobalState {
     toggleBlockUser: (userId: string) => void;
     mutedUsers: string[];
     toggleMuteUser: (userId: string) => void;
+    followingUsers: string[];
+    toggleFollowUser: (userId: string) => void;
+    followingTopics: string[];
+    toggleFollowTopic: (topicId: string) => void;
 }
 
 const defaultPrivacySettings: PrivacySettings = {
@@ -390,6 +394,8 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
     const [reportedItems, setReportedItems] = useState<any[]>([]);
     const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
     const [mutedUsers, setMutedUsers] = useState<string[]>([]);
+    const [followingUsers, setFollowingUsers] = useState<string[]>(["u-pratyusha", "u-elena"]);
+    const [followingTopics, setFollowingTopics] = useState<string[]>(["dist-sys", "zk-crypto", "ui-craft"]);
 
     // Hydrate from localStorage on mount (Client-side only)
     useEffect(() => {
@@ -434,6 +440,12 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
 
                 const storedMutes = localStorage.getItem("loominn_muted_users");
                 if (storedMutes) setMutedUsers(JSON.parse(storedMutes));
+
+                const storedFollows = localStorage.getItem("loominn_following_users");
+                if (storedFollows) setFollowingUsers(JSON.parse(storedFollows));
+
+                const storedTopics = localStorage.getItem("loominn_following_topics");
+                if (storedTopics) setFollowingTopics(JSON.parse(storedTopics));
             } catch (e) {
                 console.error("Failed to hydrate global state:", e);
             }
@@ -794,6 +806,36 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
         addNotification("Safety Action", "User mute settings updated.");
     };
 
+    const toggleFollowUser = (userId: string) => {
+        setFollowingUsers(prev => {
+            const isFollowing = prev.includes(userId);
+            const next = isFollowing ? prev.filter(id => id !== userId) : [...prev, userId];
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("loominn_following_users", JSON.stringify(next));
+            }
+            addNotification(
+                isFollowing ? "Unfollowed" : "Following",
+                isFollowing ? "You unfollowed this creator." : "You are now following this creator."
+            );
+            return next;
+        });
+    };
+
+    const toggleFollowTopic = (topicId: string) => {
+        setFollowingTopics(prev => {
+            const isFollowing = prev.includes(topicId);
+            const next = isFollowing ? prev.filter(id => id !== topicId) : [...prev, topicId];
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("loominn_following_topics", JSON.stringify(next));
+            }
+            addNotification(
+                isFollowing ? "Topic Unfollowed" : "Topic Followed",
+                isFollowing ? "You will see fewer updates from this craft domain." : "You will now see more perspectives from this topic."
+            );
+            return next;
+        });
+    };
+
     return (
         <GlobalStateContext.Provider value={{
             userProfile, updateUserProfile,
@@ -813,7 +855,9 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
             networkConnections, sendConnectionRequest, updateConnectionStatus,
             reportedItems, reportItem,
             blockedUsers, toggleBlockUser,
-            mutedUsers, toggleMuteUser
+            mutedUsers, toggleMuteUser,
+            followingUsers, toggleFollowUser,
+            followingTopics, toggleFollowTopic
         }}>
             {children}
         </GlobalStateContext.Provider>

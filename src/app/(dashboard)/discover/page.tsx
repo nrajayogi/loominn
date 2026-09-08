@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useEffect, Suspense, useMemo } from "react";
+import { useState, Suspense, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
     Search, Sparkles, Users, Briefcase, Layers, Hash, 
-    ArrowUpRight, Shield, Check, UserPlus, Filter, 
-    Zap, Compass, Play, ChevronRight, Award
+    Shield, Check, UserPlus, 
+    Play, ChevronRight, X
 } from "lucide-react";
 import { useGlobalState } from "@/context/GlobalStateContext";
-import { RelationshipTier, Perspective, ProjectOpportunityFeedContent } from "@/lib/types/schema";
-import SkillScoreBadge from "@/components/ui/SkillScoreBadge";
+import { RelationshipTier, Perspective } from "@/lib/types/schema";
 import CommitModal from "@/components/projects/CommitModal";
 import PerspectiveModalViewer from "@/components/feed/PerspectiveModalViewer";
 
@@ -130,48 +129,42 @@ const DISCOVERY_PROJECTS = [
 ];
 
 const TOPICS = [
-    { id: "dist-sys", name: "Distributed Systems", count: "142 Projects", perspectives: "320 Perspectives", following: false },
-    { id: "zk-crypto", name: "Zero Knowledge & Cryptography", count: "89 Projects", perspectives: "194 Perspectives", following: true },
-    { id: "ai-agents", name: "Agentic Systems & LLMs", count: "215 Projects", perspectives: "512 Perspectives", following: false },
-    { id: "ui-craft", name: "Design Systems & UI Craft", count: "178 Projects", perspectives: "430 Perspectives", following: true },
-    { id: "rust-wasm", name: "Rust & High-Perf WebAssembly", count: "96 Projects", perspectives: "185 Perspectives", following: false },
-    { id: "peer-gov", name: "Decentralized Protocols & Governance", count: "64 Projects", perspectives: "128 Perspectives", following: false }
+    { id: "dist-sys", name: "Distributed Systems", count: "142 Projects", perspectives: "320 Perspectives" },
+    { id: "zk-crypto", name: "Zero Knowledge & Cryptography", count: "89 Projects", perspectives: "194 Perspectives" },
+    { id: "ai-agents", name: "Agentic Systems & LLMs", count: "215 Projects", perspectives: "512 Perspectives" },
+    { id: "ui-craft", name: "Design Systems & UI Craft", count: "178 Projects", perspectives: "430 Perspectives" },
+    { id: "rust-wasm", name: "Rust & High-Perf WebAssembly", count: "96 Projects", perspectives: "185 Perspectives" },
+    { id: "peer-gov", name: "Decentralized Protocols & Governance", count: "64 Projects", perspectives: "128 Perspectives" }
 ];
+
+interface CommitProjectData {
+    id: string | number;
+    title: string;
+    roles?: { title: string; minScore: number; filled?: boolean }[];
+}
 
 function DiscoverContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const tabParam = searchParams.get("tab") as DiscoverTab;
+    const tabParam = searchParams.get("tab") as DiscoverTab | null;
+    const activeTab: DiscoverTab = (tabParam && ["foryou", "people", "projects", "perspectives", "topics"].includes(tabParam)) ? tabParam : "foryou";
 
-    const [activeTab, setActiveTab] = useState<DiscoverTab>(tabParam || "foryou");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedPerspective, setSelectedPerspective] = useState<Perspective | null>(null);
-    const [commitProject, setCommitProject] = useState<any | null>(null);
-    const [followingTopics, setFollowingTopics] = useState<Record<string, boolean>>({
-        "zk-crypto": true,
-        "ui-craft": true
-    });
+    const [commitProject, setCommitProject] = useState<CommitProjectData | null>(null);
 
     const { 
         networkConnections, 
         sendConnectionRequest, 
-        updateConnectionStatus, 
-        perspectives 
+        perspectives,
+        followingUsers,
+        toggleFollowUser,
+        followingTopics,
+        toggleFollowTopic
     } = useGlobalState();
 
-    useEffect(() => {
-        if (tabParam && ["foryou", "people", "projects", "perspectives", "topics"].includes(tabParam)) {
-            setActiveTab(tabParam);
-        }
-    }, [tabParam]);
-
     const handleTabChange = (tab: DiscoverTab) => {
-        setActiveTab(tab);
         router.push(`/discover?tab=${tab}`, { scroll: false });
-    };
-
-    const toggleTopic = (id: string) => {
-        setFollowingTopics(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     // Helper to get connection status for a peer
@@ -208,6 +201,14 @@ function DiscoverContent() {
         );
     }, [perspectives, searchQuery]);
 
+    const filteredTopics = useMemo(() => {
+        if (!searchQuery.trim()) return TOPICS;
+        const q = searchQuery.toLowerCase();
+        return TOPICS.filter(t => 
+            t.name.toLowerCase().includes(q)
+        );
+    }, [searchQuery]);
+
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-24 px-4 sm:px-6">
             {/* Page Header */}
@@ -234,14 +235,15 @@ function DiscoverContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by skill, domain, perspective title, or name..."
-                    className="w-full pl-11 pr-4 py-3 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all backdrop-blur-sm"
+                    className="w-full pl-11 pr-10 py-3 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all backdrop-blur-sm"
                 />
                 {searchQuery && (
                     <button
                         onClick={() => setSearchQuery("")}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5"
+                        title="Clear search"
                     >
-                        Clear
+                        <X size={16} />
                     </button>
                 )}
             </div>
@@ -333,6 +335,8 @@ function DiscoverContent() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {PEERS.slice(0, 2).map(peer => {
                                 const conn = getConnection(peer.id);
+                                const isFollowing = followingUsers.includes(peer.id);
+
                                 return (
                                     <div key={peer.id} className="bg-zinc-900/60 border border-white/5 hover:border-purple-500/30 rounded-2xl p-5 space-y-4 transition-all">
                                         <div className="flex items-start justify-between">
@@ -365,21 +369,34 @@ function DiscoverContent() {
                                                 ))}
                                             </div>
 
-                                            {conn?.status === "connected" ? (
-                                                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                                                    <Check size={14} /> Connected
-                                                </span>
-                                            ) : conn?.status === "request_sent" ? (
-                                                <span className="text-xs text-zinc-400 font-mono">Request Sent</span>
-                                            ) : (
+                                            <div className="flex items-center gap-2">
                                                 <button
-                                                    onClick={() => sendConnectionRequest(peer.id, peer.tierRecommendation)}
-                                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1 transition-all"
+                                                    onClick={() => toggleFollowUser(peer.id)}
+                                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                                                        isFollowing
+                                                            ? "bg-white/10 text-zinc-300"
+                                                            : "bg-white/5 text-zinc-400 hover:text-white"
+                                                    }`}
                                                 >
-                                                    <UserPlus size={13} />
-                                                    <span>Connect</span>
+                                                    {isFollowing ? "Following" : "+ Follow"}
                                                 </button>
-                                            )}
+
+                                                {conn?.status === "connected" ? (
+                                                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                                                        <Check size={14} /> Connected
+                                                    </span>
+                                                ) : conn?.status === "request_sent" ? (
+                                                    <span className="text-xs text-zinc-400 font-mono">Request Sent</span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => sendConnectionRequest(peer.id, peer.tierRecommendation)}
+                                                        className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                                                    >
+                                                        <UserPlus size={13} />
+                                                        <span>Connect</span>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -491,208 +508,268 @@ function DiscoverContent() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredPeers.map(peer => {
-                            const conn = getConnection(peer.id);
-                            return (
-                                <div key={peer.id} className="bg-zinc-900/70 border border-white/10 hover:border-blue-500/30 rounded-2xl p-5 space-y-4 transition-all">
-                                    <div className="flex items-start gap-3.5">
-                                        <img src={peer.avatar} alt={peer.name} className="w-12 h-12 rounded-full object-cover border border-white/10" />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between">
-                                                <h4 className="font-bold text-white text-sm truncate">{peer.name}</h4>
-                                                <span className="text-[10px] px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-300 border-blue-500/20 font-mono">
-                                                    {peer.orbitScore.toLocaleString()} Orbit
-                                                </span>
+                    {filteredPeers.length === 0 ? (
+                        <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <Search size={24} className="mx-auto text-zinc-500" />
+                            <h3 className="text-white font-bold text-sm">No peers match &ldquo;{searchQuery}&rdquo;</h3>
+                            <p className="text-xs text-zinc-400">Try searching for a skill, craft title, or domain.</p>
+                            <button onClick={() => setSearchQuery("")} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">
+                                Clear Search
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {filteredPeers.map(peer => {
+                                const conn = getConnection(peer.id);
+                                const isFollowing = followingUsers.includes(peer.id);
+
+                                return (
+                                    <div key={peer.id} className="bg-zinc-900/70 border border-white/10 hover:border-blue-500/30 rounded-2xl p-5 space-y-4 transition-all">
+                                        <div className="flex items-start gap-3.5">
+                                            <img src={peer.avatar} alt={peer.name} className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="font-bold text-white text-sm truncate">{peer.name}</h4>
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-300 border-blue-500/20 font-mono">
+                                                        {peer.orbitScore.toLocaleString()} Orbit
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-zinc-400">{peer.role}</p>
+                                                <p className="text-[11px] text-zinc-500">{peer.handle}</p>
                                             </div>
-                                            <p className="text-xs text-zinc-400">{peer.role}</p>
-                                            <p className="text-[11px] text-zinc-500">{peer.handle}</p>
+                                        </div>
+
+                                        {/* Match Reason */}
+                                        <div className="bg-black/40 p-3 rounded-xl border border-white/5 space-y-1 text-xs">
+                                            <span className="text-[10px] font-mono text-purple-400 uppercase tracking-wider block font-semibold">
+                                                Orbit Match Rationale
+                                            </span>
+                                            <p className="text-zinc-300 text-[11px] leading-relaxed">
+                                                {peer.matchReason}
+                                            </p>
+                                        </div>
+
+                                        {/* Skills & Follow */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {peer.sharedSkills.map((s, idx) => (
+                                                    <span key={idx} className="text-[10px] bg-white/5 text-zinc-400 px-2 py-0.5 rounded">
+                                                        {s}
+                                                    </span>
+                                                ))}
+                                            </div>
+
+                                            <button
+                                                onClick={() => toggleFollowUser(peer.id)}
+                                                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-colors ${
+                                                    isFollowing
+                                                        ? "bg-white/10 text-zinc-300"
+                                                        : "bg-white/5 text-zinc-400 hover:text-white"
+                                                }`}
+                                            >
+                                                {isFollowing ? "Following" : "+ Follow"}
+                                            </button>
+                                        </div>
+
+                                        {/* Tier Connection Buttons */}
+                                        <div className="pt-2 border-t border-white/5">
+                                            {conn?.status === "connected" ? (
+                                                <div className="w-full py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5">
+                                                    <Check size={14} /> Connected as {conn.tier.toUpperCase()}
+                                                </div>
+                                            ) : conn?.status === "request_sent" ? (
+                                                <div className="w-full py-2 bg-zinc-800 rounded-xl text-center text-xs font-medium text-zinc-400">
+                                                    Connection Request Sent ({conn.tier})
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    <button
+                                                        onClick={() => sendConnectionRequest(peer.id, "partner")}
+                                                        className="py-1.5 px-2 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-[11px] font-semibold transition-colors border border-blue-500/30 text-center"
+                                                    >
+                                                        + Partner
+                                                    </button>
+                                                    <button
+                                                        onClick={() => sendConnectionRequest(peer.id, "colleague")}
+                                                        className="py-1.5 px-2 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded-lg text-[11px] font-semibold transition-colors border border-purple-500/30 text-center"
+                                                    >
+                                                        + Colleague
+                                                    </button>
+                                                    <button
+                                                        onClick={() => sendConnectionRequest(peer.id, "ally")}
+                                                        className="py-1.5 px-2 bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white rounded-lg text-[11px] font-semibold transition-colors border border-pink-500/30 text-center"
+                                                    >
+                                                        + Ally
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
-                                    {/* Match Reason */}
-                                    <div className="bg-black/40 p-3 rounded-xl border border-white/5 space-y-1 text-xs">
-                                        <span className="text-[10px] font-mono text-purple-400 uppercase tracking-wider block font-semibold">
-                                            Orbit Match Rationale
-                                        </span>
-                                        <p className="text-zinc-300 text-[11px] leading-relaxed">
-                                            {peer.matchReason}
-                                        </p>
-                                    </div>
-
-                                    {/* Skills */}
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {peer.sharedSkills.map((s, idx) => (
-                                            <span key={idx} className="text-[10px] bg-white/5 text-zinc-400 px-2 py-0.5 rounded">
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    {/* Tier Connection Buttons */}
-                                    <div className="pt-2 border-t border-white/5">
-                                        {conn?.status === "connected" ? (
-                                            <div className="w-full py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5">
-                                                <Check size={14} /> Connected as {conn.tier.toUpperCase()}
-                                            </div>
-                                        ) : conn?.status === "request_sent" ? (
-                                            <div className="w-full py-2 bg-zinc-800 rounded-xl text-center text-xs font-medium text-zinc-400">
-                                                Connection Request Sent ({conn.tier})
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <button
-                                                    onClick={() => sendConnectionRequest(peer.id, "partner")}
-                                                    className="py-1.5 px-2 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-[11px] font-semibold transition-colors border border-blue-500/30 text-center"
-                                                >
-                                                    + Partner
-                                                </button>
-                                                <button
-                                                    onClick={() => sendConnectionRequest(peer.id, "colleague")}
-                                                    className="py-1.5 px-2 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded-lg text-[11px] font-semibold transition-colors border border-purple-500/30 text-center"
-                                                >
-                                                    + Colleague
-                                                </button>
-                                                <button
-                                                    onClick={() => sendConnectionRequest(peer.id, "ally")}
-                                                    className="py-1.5 px-2 bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white rounded-lg text-[11px] font-semibold transition-colors border border-pink-500/30 text-center"
-                                                >
-                                                    + Ally
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* TAB 3: PROJECTS */}
             {activeTab === "projects" && (
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredProjects.map(proj => (
-                            <div key={proj.id} className="bg-zinc-900/70 border border-white/10 hover:border-cyan-500/30 rounded-2xl p-5 space-y-4 transition-all flex flex-col justify-between">
-                                <div className="space-y-2.5">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-mono uppercase text-cyan-400 font-semibold">{proj.category}</span>
-                                        <span className="text-[10px] px-2 py-0.5 rounded-full border bg-cyan-500/10 text-cyan-300 border-cyan-500/20 uppercase font-mono">
-                                            {proj.difficulty}
-                                        </span>
+                    {filteredProjects.length === 0 ? (
+                        <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <Search size={24} className="mx-auto text-zinc-500" />
+                            <h3 className="text-white font-bold text-sm">No projects match &ldquo;{searchQuery}&rdquo;</h3>
+                            <p className="text-xs text-zinc-400">Try adjusting your search criteria or domain keyword.</p>
+                            <button onClick={() => setSearchQuery("")} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold">
+                                Clear Search
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {filteredProjects.map(proj => (
+                                <div key={proj.id} className="bg-zinc-900/70 border border-white/10 hover:border-cyan-500/30 rounded-2xl p-5 space-y-4 transition-all flex flex-col justify-between">
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-mono uppercase text-cyan-400 font-semibold">{proj.category}</span>
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full border bg-cyan-500/10 text-cyan-300 border-cyan-500/20 uppercase font-mono">
+                                                {proj.difficulty}
+                                            </span>
+                                        </div>
+
+                                        <h4 className="font-bold text-white text-base hover:text-cyan-300 transition-colors">
+                                            <Link href={`/projects/${proj.id}`}>{proj.title}</Link>
+                                        </h4>
+
+                                        <p className="text-xs text-zinc-300 leading-relaxed">
+                                            {proj.description}
+                                        </p>
                                     </div>
 
-                                    <h4 className="font-bold text-white text-base hover:text-cyan-300 transition-colors">
-                                        <Link href={`/projects/${proj.id}`}>{proj.title}</Link>
-                                    </h4>
+                                    <div className="space-y-3 pt-3 border-t border-white/5">
+                                        <div className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">
+                                            Available Roles:
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            {proj.roles.map((r, idx) => (
+                                                <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-black/30 border border-white/5">
+                                                    <span className="text-zinc-200">{r.title}</span>
+                                                    <span className="font-mono text-cyan-400">{r.minScore}+ Score</span>
+                                                </div>
+                                            ))}
+                                        </div>
 
-                                    <p className="text-xs text-zinc-300 leading-relaxed">
-                                        {proj.description}
-                                    </p>
+                                        <button
+                                            onClick={() => setCommitProject(proj)}
+                                            className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                                        >
+                                            <Shield size={14} />
+                                            <span>Stake Score & Apply</span>
+                                        </button>
+                                    </div>
                                 </div>
-
-                                <div className="space-y-3 pt-3 border-t border-white/5">
-                                    <div className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">
-                                        Available Roles:
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        {proj.roles.map((r, idx) => (
-                                            <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg bg-black/30 border border-white/5">
-                                                <span className="text-zinc-200">{r.title}</span>
-                                                <span className="font-mono text-cyan-400">{r.minScore}+ Score</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <button
-                                        onClick={() => setCommitProject(proj)}
-                                        className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-                                    >
-                                        <Shield size={14} />
-                                        <span>Stake Score & Apply</span>
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* TAB 4: PERSPECTIVES */}
             {activeTab === "perspectives" && (
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredPerspectives.map(p => (
-                            <div 
-                                key={p.id}
-                                onClick={() => setSelectedPerspective(p)}
-                                className="bg-zinc-900/70 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl p-5 space-y-3 cursor-pointer group transition-all"
-                            >
-                                <div className="flex items-center justify-between text-xs">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-white">{p.userName}</span>
-                                        <span className="text-[10px] px-2 py-0.5 rounded-full border bg-purple-500/10 text-purple-300 border-purple-500/20">
-                                            {p.status}
+                    {filteredPerspectives.length === 0 ? (
+                        <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <Search size={24} className="mx-auto text-zinc-500" />
+                            <h3 className="text-white font-bold text-sm">No perspectives found matching &ldquo;{searchQuery}&rdquo;</h3>
+                            <p className="text-xs text-zinc-400">Explore active reels or clear your search to view all perspectives.</p>
+                            <button onClick={() => setSearchQuery("")} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold">
+                                Clear Search
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {filteredPerspectives.map(p => (
+                                <div 
+                                    key={p.id}
+                                    onClick={() => setSelectedPerspective(p)}
+                                    className="bg-zinc-900/70 border border-purple-500/20 hover:border-purple-500/40 rounded-2xl p-5 space-y-3 cursor-pointer group transition-all"
+                                >
+                                    <div className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-white">{p.userName}</span>
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full border bg-purple-500/10 text-purple-300 border-purple-500/20">
+                                                {p.status}
+                                            </span>
+                                        </div>
+                                        <span className="text-[11px] text-zinc-500 font-mono">
+                                            {p.items?.length || 1} Slides
                                         </span>
                                     </div>
-                                    <span className="text-[11px] text-zinc-500 font-mono">
-                                        {p.items?.length || 1} Slides
-                                    </span>
+
+                                    <h4 className="font-bold text-white text-base group-hover:text-purple-300 transition-colors">
+                                        {p.title}
+                                    </h4>
+
+                                    <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">
+                                        {p.items?.[0]?.content}
+                                    </p>
+
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-zinc-400">
+                                        <span>{p.createdAt || "Recently"}</span>
+                                        <span className="text-purple-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                            <Play size={12} className="fill-purple-400" /> Watch Reel
+                                        </span>
+                                    </div>
                                 </div>
-
-                                <h4 className="font-bold text-white text-base group-hover:text-purple-300 transition-colors">
-                                    {p.title}
-                                </h4>
-
-                                <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">
-                                    {p.items?.[0]?.content}
-                                </p>
-
-                                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-zinc-400">
-                                    <span>{p.createdAt || "Recently"}</span>
-                                    <span className="text-purple-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                                        <Play size={12} className="fill-purple-400" /> Watch Reel
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* TAB 5: TOPICS */}
             {activeTab === "topics" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {TOPICS.map(topic => {
-                        const isFollowing = followingTopics[topic.id];
-                        return (
-                            <div key={topic.id} className="bg-zinc-900/70 border border-white/10 hover:border-amber-500/30 rounded-2xl p-5 space-y-3 transition-all flex items-start justify-between">
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center gap-2">
-                                        <Hash size={16} className="text-amber-400" />
-                                        <h4 className="font-bold text-white text-sm">{topic.name}</h4>
-                                    </div>
-                                    <div className="text-xs text-zinc-400 flex items-center gap-3">
-                                        <span>{topic.count}</span>
-                                        <span>•</span>
-                                        <span>{topic.perspectives}</span>
-                                    </div>
-                                </div>
+                <div className="space-y-4">
+                    {filteredTopics.length === 0 ? (
+                        <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <Search size={24} className="mx-auto text-zinc-500" />
+                            <h3 className="text-white font-bold text-sm">No topics found matching &ldquo;{searchQuery}&rdquo;</h3>
+                            <button onClick={() => setSearchQuery("")} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold">
+                                Clear Search
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {filteredTopics.map(topic => {
+                                const isFollowing = followingTopics.includes(topic.id);
+                                return (
+                                    <div key={topic.id} className="bg-zinc-900/70 border border-white/10 hover:border-amber-500/30 rounded-2xl p-5 space-y-3 transition-all flex items-start justify-between">
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <Hash size={16} className="text-amber-400" />
+                                                <h4 className="font-bold text-white text-sm">{topic.name}</h4>
+                                            </div>
+                                            <div className="text-xs text-zinc-400 flex items-center gap-3">
+                                                <span>{topic.count}</span>
+                                                <span>•</span>
+                                                <span>{topic.perspectives}</span>
+                                            </div>
+                                        </div>
 
-                                <button
-                                    onClick={() => toggleTopic(topic.id)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                                        isFollowing
-                                            ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
-                                            : "bg-white/10 text-white hover:bg-white/20"
-                                    }`}
-                                >
-                                    {isFollowing ? "Following" : "+ Follow"}
-                                </button>
-                            </div>
-                        );
-                    })}
+                                        <button
+                                            onClick={() => toggleFollowTopic(topic.id)}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                                                isFollowing
+                                                    ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                                    : "bg-white/10 text-white hover:bg-white/20"
+                                            }`}
+                                        >
+                                            {isFollowing ? "Following" : "+ Follow"}
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, MessageSquare, Share2, Bookmark, MoreHorizontal, Sparkles } from "lucide-react";
+import { Heart, MessageSquare, Share2, Bookmark, MoreHorizontal, Check, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import CommentDrawer from "./CommentDrawer";
@@ -32,12 +32,24 @@ export default function PostCard({
     tags = [],
     image
 }: PostCardProps) {
-    const { toggleLike, toggleSave, savedPosts, comments } = useGlobalState();
+    const { 
+        toggleLike, 
+        toggleSave, 
+        savedPosts, 
+        comments, 
+        followingUsers, 
+        toggleFollowUser 
+    } = useGlobalState();
+
     const [isCommentOpen, setIsCommentOpen] = useState(false);
     const [isSafetyOpen, setIsSafetyOpen] = useState(false);
+    const [shareCopied, setShareCopied] = useState(false);
 
     const numericId = typeof id === "string" ? parseInt(id.replace(/\D/g, "")) || 1 : id;
     const isSaved = savedPosts.includes(numericId);
+
+    const authorId = author.toLowerCase().replace(/\s+/g, "-");
+    const isFollowing = followingUsers.includes(authorId) || followingUsers.includes(`u-${authorId}`);
 
     // Live count of comments from state
     const currentComments = comments.filter(c => String(c.targetId) === String(id));
@@ -56,8 +68,9 @@ export default function PostCard({
                 console.log("Share cancelled or failed", e);
             }
         } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-            navigator.clipboard.writeText(shareData.url);
-            alert("Post link copied to clipboard!");
+            await navigator.clipboard.writeText(shareData.url);
+            setShareCopied(true);
+            setTimeout(() => setShareCopied(false), 2000);
         }
     };
 
@@ -65,8 +78,8 @@ export default function PostCard({
         <div className="bg-zinc-900/60 border border-white/5 hover:border-white/10 rounded-2xl p-5 space-y-4 transition-all duration-300 backdrop-blur-sm group">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <Link href={`/profile/${author.toLowerCase().replace(/\s+/g, "-")}`} className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                <Link href={`/profile/${authorId}`} className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 flex items-center justify-center text-white font-bold text-sm overflow-hidden shadow-md">
                         {authorImage ? (
                             <img src={authorImage} alt={author} className="w-full h-full object-cover rounded-full" />
                         ) : (
@@ -84,7 +97,18 @@ export default function PostCard({
                     </div>
                 </Link>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => toggleFollowUser(authorId)}
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all ${
+                            isFollowing
+                                ? "bg-white/10 text-zinc-300 hover:bg-white/20"
+                                : "bg-blue-600/15 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/30"
+                        }`}
+                    >
+                        {isFollowing ? "Following" : "+ Follow"}
+                    </button>
+
                     <button 
                         onClick={() => setIsSafetyOpen(true)}
                         className="p-1.5 text-zinc-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
@@ -141,8 +165,17 @@ export default function PostCard({
                         onClick={handleShare}
                         className="flex items-center gap-1.5 hover:text-purple-400 transition-colors group/btn"
                     >
-                        <Share2 size={16} className="group-hover/btn:scale-110 transition-transform" />
-                        <span>Share</span>
+                        {shareCopied ? (
+                            <>
+                                <Check size={14} className="text-emerald-400" />
+                                <span className="text-emerald-400 font-semibold">Copied!</span>
+                            </>
+                        ) : (
+                            <>
+                                <Share2 size={16} className="group-hover/btn:scale-110 transition-transform" />
+                                <span>Share</span>
+                            </>
+                        )}
                     </button>
                 </div>
 

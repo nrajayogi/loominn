@@ -48,9 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
     const context = useContext(AuthContext);
+    const sessionContext = useSession();
+
     if (context === undefined) {
         // Fallback directly to useSession if outside AuthProvider
-        const { data: session, status } = useSession();
+        const { data: session, status } = sessionContext;
         return {
             user: session?.user || null,
             isLoading: status === "loading",

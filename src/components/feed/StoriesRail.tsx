@@ -1,28 +1,28 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Plus, X, Heart, Send, Briefcase, FileText, CheckCircle2, Clock, Camera, MapPin } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Plus, X, Heart, Send, Briefcase, FileText, CheckCircle2, Clock, Camera, MapPin, Upload, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import { Perspective, PerspectiveStatus, PerspectiveItemType } from "@/lib/types/schema";
-
-// Initial mock data removed - now in global state
 
 export default function StoriesRail() {
     const { perspectives, addPerspective, userProfile } = useGlobalState();
     const [selectedBriefIndex, setSelectedBriefIndex] = useState<number | null>(null);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
     const [isCreating, setIsCreating] = useState(false);
+    const [newPerspectiveTitle, setNewPerspectiveTitle] = useState("");
     const [newPerspectiveContent, setNewPerspectiveContent] = useState("");
     const [newPerspectiveImage, setNewPerspectiveImage] = useState("");
+    const [newStatus, setNewStatus] = useState<PerspectiveStatus>("Perspective");
     const [includeLocation, setIncludeLocation] = useState(true);
 
-
-
-    // Camera State
+    // Camera & Upload State
     const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const closeViewer = () => {
         setSelectedBriefIndex(null);
@@ -31,14 +31,19 @@ export default function StoriesRail() {
 
     const startCamera = async () => {
         setIsCameraOpen(true);
+        setCameraError(null);
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("Camera API not supported in this browser environment.");
+            }
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
-        } catch (err) {
-            console.error("Error accessing camera:", err);
-            setIsCameraOpen(false);
+        } catch (err: unknown) {
+            console.warn("Camera access failed:", err);
+            const message = err instanceof Error ? err.message : "Camera permission denied or camera device unavailable.";
+            setCameraError(message);
         }
     };
 
@@ -61,36 +66,53 @@ export default function StoriesRail() {
             videoRef.current.srcObject = null;
         }
         setIsCameraOpen(false);
+        setCameraError(null);
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewPerspectiveImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleCreatePerspective = () => {
         if (!newPerspectiveContent.trim()) return;
 
-        const newBrief = {
-            id: `b-${Date.now()}`,
+        const generatedTitle = newPerspectiveTitle.trim() || 
+            newPerspectiveContent.substring(0, 32) + (newPerspectiveContent.length > 32 ? "..." : "");
+
+        const newBrief: Perspective = {
+            id: `p-${Date.now()}`,
             userId: "u-current",
             userName: userProfile.name || "Anonymous",
             role: userProfile.bio?.split("•")[0]?.trim() || "Member",
             userImage: userProfile.image,
-            title: newPerspectiveContent.substring(0, 30) + (newPerspectiveContent.length > 30 ? "..." : ""),
+            title: generatedTitle,
             location: includeLocation ? userProfile.location : (userProfile.accountOrigin || "United States"),
-            status: "Perspective" as PerspectiveStatus,
+            status: newStatus,
             items: [
                 {
-                    id: `bi-${Date.now()}`,
+                    id: `pi-${Date.now()}`,
                     type: (newPerspectiveImage ? "image" : "text") as PerspectiveItemType,
                     content: newPerspectiveContent,
-                    url: newPerspectiveImage,
-                    background: "bg-zinc-900 border border-blue-500/30",
+                    url: newPerspectiveImage || undefined,
                     duration: 5000
                 }
-            ]
+            ],
+            createdAt: "Just now"
         };
 
         addPerspective(newBrief);
         setIsCreating(false);
+        setNewPerspectiveTitle("");
         setNewPerspectiveContent("");
         setNewPerspectiveImage("");
+        stopCamera();
     };
 
     const handleNextSlide = () => {
@@ -120,104 +142,101 @@ export default function StoriesRail() {
         }
     };
 
-
     return (
-        <div className="mb-8">
-            {/* Professional Header */}
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-zinc-800 rounded-md border border-zinc-700">
-                        <Briefcase size={14} className="text-zinc-400" />
-                    </div>
-                    <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-widest">Perspectives</h3>
-                </div>
-                <button className="text-xs text-blue-400 hover:text-blue-300 font-medium">View All</button>
-            </div>
-
-            {/* "Brief Files" Scroll Rail */}
-            <div className="flex gap-4 overflow-x-auto pb-4 pt-2 px-1 scrollbar-hide snap-x">
+        <div className="space-y-3">
+            {/* Scroll Rail */}
+            <div className="flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-hide snap-x">
                 {/* Create Perspective Card */}
                 <motion.div
                     onClick={() => setIsCreating(true)}
                     whileHover={{ y: -2 }}
-                    className="relative min-w-[160px] h-[220px] bg-zinc-900 border border-dashed border-zinc-700 rounded-xl flex flex-col items-center justify-center gap-4 cursor-pointer group hover:border-blue-500/50 hover:bg-zinc-800/50 transition-all flex-shrink-0 snap-start"
+                    className="relative min-w-[150px] sm:min-w-[170px] h-[210px] bg-zinc-900/80 border border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer group hover:bg-zinc-800/40 transition-all flex-shrink-0 snap-start"
                 >
-                    <div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 group-hover:text-blue-400 group-hover:border-blue-500/50 transition-colors">
-                        <Plus size={24} />
+                    <div className="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all shadow-md">
+                        <Plus size={22} />
                     </div>
-                    <div className="text-center px-4">
-                        <span className="block text-sm font-bold text-zinc-300 group-hover:text-white mb-1">Share</span>
-                        <span className="block text-xs text-zinc-500 group-hover:text-zinc-400">Perspective</span>
+                    <div className="text-center px-3">
+                        <span className="block text-xs font-bold text-white group-hover:text-purple-300">Share</span>
+                        <span className="block text-[11px] text-zinc-400">Perspective</span>
                     </div>
                 </motion.div>
 
-                {/* Brief Cards */}
-                {perspectives.map((brief, index) => (
-                    <motion.div
-                        key={brief.id}
-                        onClick={() => setSelectedBriefIndex(index)}
-                        whileHover={{ y: -4 }}
-                        className="relative min-w-[200px] h-[220px] bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden cursor-pointer snap-start group shadow-sm hover:shadow-xl hover:shadow-black/50 hover:border-zinc-700 transition-all flex-shrink-0 flex flex-col"
-                    >
-                        {/* Card Background / Hero Image if available (fallback to gradient) */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-zinc-800/50 to-zinc-950 z-0"></div>
+                {/* Perspective Cards */}
+                {perspectives.length === 0 ? (
+                    <div className="h-[210px] flex-1 flex items-center justify-center border border-white/5 rounded-2xl p-6 text-center text-zinc-500 text-xs">
+                        No active perspectives yet. Share your craft updates or experiments!
+                    </div>
+                ) : (
+                    perspectives.map((brief, index) => (
+                        <motion.div
+                            key={brief.id}
+                            onClick={() => {
+                                setSelectedBriefIndex(index);
+                                setCurrentSlideIndex(0);
+                            }}
+                            whileHover={{ y: -3 }}
+                            className="relative min-w-[180px] sm:min-w-[200px] h-[210px] bg-zinc-900 border border-white/5 hover:border-purple-500/40 rounded-2xl overflow-hidden cursor-pointer snap-start group shadow-md hover:shadow-xl transition-all flex-shrink-0 flex flex-col justify-between p-4"
+                        >
+                            {/* Card Background gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/60 via-zinc-950/80 to-black z-0 pointer-events-none" />
 
-                        {/* Status Strip */}
-                        <div className={`absolute top-0 left-0 right-0 h-1 z-10 ${brief.status === 'Perspective' ? 'bg-blue-500' : brief.status === 'In Progress' ? 'bg-yellow-500' : 'bg-purple-500'}`}></div>
+                            {/* Status Accent Strip */}
+                            <div className={`absolute top-0 left-0 right-0 h-1 z-10 ${
+                                brief.status === 'Perspective' ? 'bg-purple-500' : brief.status === 'In Progress' ? 'bg-blue-500' : 'bg-amber-500'
+                            }`} />
 
-                        <div className="relative z-10 p-5 flex flex-col h-full justify-between">
                             {/* Author Header */}
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 overflow-hidden border border-zinc-700 shadow-lg">
+                            <div className="relative z-10 flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0 overflow-hidden border border-white/10">
                                     {(brief.userId === 'u-current' ? userProfile.image : brief.userImage) ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
                                         <img
                                             src={brief.userId === 'u-current' ? userProfile.image : brief.userImage}
                                             alt=""
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-white font-bold">
+                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-white font-bold bg-gradient-to-tr from-purple-600 to-blue-600">
                                             {(brief.userId === 'u-current' ? userProfile.name : brief.userName).charAt(0)}
                                         </div>
                                     )}
                                 </div>
-                                <div className="overflow-hidden">
+                                <div className="overflow-hidden min-w-0">
                                     <p className="text-xs font-bold text-white truncate">
                                         {brief.userId === 'u-current' ? userProfile.name : brief.userName}
                                     </p>
                                     <p className="text-[10px] text-zinc-500 truncate">
                                         {brief.userId === 'u-current' ? (userProfile.bio?.split("•")[0]?.trim() || "Member") : brief.role}
-                                        {brief.location && <span className="ml-1">• {brief.location}</span>}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Main Title Content */}
-                            <div>
-                                <div className="flex items-center gap-1.5 mb-2">
-                                    {brief.status === 'Perspective' && <CheckCircle2 size={12} className="text-blue-500" />}
-                                    {brief.status === 'In Progress' && <Clock size={12} className="text-yellow-500" />}
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${brief.status === 'Perspective' ? 'text-blue-500' : brief.status === 'In Progress' ? 'text-yellow-500' : 'text-purple-500'}`}>
+                            <div className="relative z-10 my-auto py-2">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.2 rounded-full border ${
+                                        brief.status === 'Perspective' ? 'text-purple-400 border-purple-500/20 bg-purple-500/10' :
+                                        brief.status === 'In Progress' ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
+                                        'text-amber-400 border-amber-500/20 bg-amber-500/10'
+                                    }`}>
                                         {brief.status}
                                     </span>
                                 </div>
-                                <h4 className="text-base font-bold text-white leading-tight line-clamp-3 mb-1">
+                                <h4 className="text-xs sm:text-sm font-bold text-white leading-snug line-clamp-3 group-hover:text-purple-300 transition-colors">
                                     {brief.title}
                                 </h4>
                             </div>
 
                             {/* Footer meta */}
-                            <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-500 mt-2">
-                                <span>2h ago</span>
-                                <div className="flex items-center gap-1">
-                                    <FileText size={12} />
-                                    <span>Read</span>
+                            <div className="relative z-10 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-400">
+                                <span>{brief.createdAt || "Recent"}</span>
+                                <div className="flex items-center gap-1 text-purple-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                                    <span>Reel</span>
+                                    <span>→</span>
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    ))
+                )}
             </div>
 
             {/* Creation Modal */}
@@ -227,7 +246,7 @@ export default function StoriesRail() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+                        className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
                         onClick={() => { setIsCreating(false); stopCamera(); }}
                     >
                         <motion.div
@@ -235,73 +254,156 @@ export default function StoriesRail() {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 10 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-zinc-700 shadow-2xl p-6 flex flex-col max-h-[90vh]"
+                            className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-white/10 shadow-2xl p-6 flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar space-y-4"
                         >
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold text-white">Share Perspective</h3>
-                                <button onClick={() => { setIsCreating(false); stopCamera(); }} className="text-zinc-500 hover:text-white">
-                                    <X size={24} />
+                            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                    <Sparkles size={16} className="text-purple-400" />
+                                    <span>Share Technical Perspective</span>
+                                </h3>
+                                <button onClick={() => { setIsCreating(false); stopCamera(); }} className="text-zinc-400 hover:text-white p-1 rounded-lg">
+                                    <X size={20} />
                                 </button>
                             </div>
 
-                            {isCameraOpen ? (
-                                <div className="relative w-full h-64 bg-black rounded-xl overflow-hidden mb-4 border border-zinc-800">
-                                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                                    <canvas ref={canvasRef} width="640" height="480" className="hidden" />
-                                    <button
-                                        onClick={capturePhoto}
-                                        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full border-4 border-white bg-red-500 shadow-lg"
-                                        title="Capture Photo"
-                                    ></button>
+                            {/* Status Selector */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-zinc-300">Craft Stage</label>
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                    {(["Perspective", "In Progress", "Planning"] as PerspectiveStatus[]).map(status => (
+                                        <button
+                                            key={status}
+                                            type="button"
+                                            onClick={() => setNewStatus(status)}
+                                            className={`py-2 px-3 rounded-xl border font-medium transition-all ${
+                                                newStatus === status
+                                                    ? "bg-purple-600 border-purple-500 text-white font-bold"
+                                                    : "bg-black/40 border-white/5 text-zinc-400 hover:text-white"
+                                            }`}
+                                        >
+                                            {status}
+                                        </button>
+                                    ))}
                                 </div>
-                            ) : (
-                                <textarea
-                                    value={newPerspectiveContent}
-                                    onChange={(e) => setNewPerspectiveContent(e.target.value)}
-                                    placeholder="What's your perspective?"
-                                    className="w-full h-32 bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-4 resize-none"
-                                />
-                            )}
+                            </div>
 
-                            <div className="mb-6 flex gap-2">
+                            {/* Title */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-zinc-300">Perspective Title</label>
                                 <input
                                     type="text"
-                                    value={newPerspectiveImage}
-                                    onChange={(e) => setNewPerspectiveImage(e.target.value)}
-                                    placeholder="Image URL (optional)..."
-                                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 text-sm"
+                                    value={newPerspectiveTitle}
+                                    onChange={(e) => setNewPerspectiveTitle(e.target.value)}
+                                    placeholder="e.g. Distributed State Handshake Analysis"
+                                    className="w-full p-2.5 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500"
                                 />
-                                <button
-                                    onClick={isCameraOpen ? stopCamera : startCamera}
-                                    className={`p-2 rounded-xl transition-colors ${isCameraOpen ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"}`}
-                                    title={isCameraOpen ? "Close Camera" : "Open Camera"}
-                                >
-                                    <Camera size={20} />
-                                </button>
                             </div>
 
-                            {/* Location Toggle */}
-                            <div className="flex items-center justify-between mb-6 px-1">
-                                <div className="flex items-center gap-2 text-zinc-400">
-                                    <MapPin size={16} />
-                                    <span className="text-sm">Share Location</span>
-                                </div>
-                                <button
-                                    onClick={() => setIncludeLocation(!includeLocation)}
-                                    className={`relative w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${includeLocation ? 'bg-blue-600' : 'bg-zinc-700'}`}
-                                >
-                                    <span className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ease-in-out ${includeLocation ? 'translate-x-4' : 'translate-x-0'}`} />
-                                </button>
+                            {/* Content */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-zinc-300">Perspective Insights / Deliverables</label>
+                                <textarea
+                                    rows={4}
+                                    required
+                                    value={newPerspectiveContent}
+                                    onChange={(e) => setNewPerspectiveContent(e.target.value)}
+                                    placeholder="What architectural trade-offs, findings, or code milestones are you exploring?"
+                                    className="w-full p-3 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 leading-relaxed"
+                                />
                             </div>
 
-                            <div className="flex justify-end gap-3">
-                                <button onClick={() => { setIsCreating(false); stopCamera(); }} className="px-4 py-2 text-zinc-400 hover:text-white font-medium">Cancel</button>
+                            {/* Camera / Image Upload Section */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-300">Visual Artifact / Snapshot (Optional)</label>
+
+                                {isCameraOpen ? (
+                                    <div className="relative w-full h-56 bg-black rounded-xl overflow-hidden border border-zinc-700">
+                                        {cameraError ? (
+                                            <div className="h-full flex flex-col items-center justify-center p-4 text-center text-amber-400 space-y-2">
+                                                <AlertCircle size={24} />
+                                                <p className="text-xs">{cameraError}</p>
+                                                <button
+                                                    onClick={stopCamera}
+                                                    className="px-3 py-1 bg-white/10 rounded-lg text-xs text-white hover:bg-white/20"
+                                                >
+                                                    Dismiss
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                                                <canvas ref={canvasRef} width="640" height="480" className="hidden" />
+                                                <div className="absolute bottom-3 inset-x-0 flex justify-center gap-3">
+                                                    <button
+                                                        onClick={capturePhoto}
+                                                        className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg"
+                                                    >
+                                                        Capture Snapshot
+                                                    </button>
+                                                    <button
+                                                        onClick={stopCamera}
+                                                        className="px-4 py-1.5 bg-black/60 hover:bg-black/80 text-white rounded-xl text-xs"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : newPerspectiveImage ? (
+                                    <div className="relative rounded-xl overflow-hidden border border-white/10 max-h-48">
+                                        <img src={newPerspectiveImage} alt="Perspective Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            onClick={() => setNewPerspectiveImage("")}
+                                            className="absolute top-2 right-2 p-1 bg-black/70 hover:bg-black text-white rounded-lg"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={startCamera}
+                                            className="flex-1 py-2.5 bg-black/40 hover:bg-zinc-800 border border-white/10 rounded-xl text-xs text-zinc-300 flex items-center justify-center gap-1.5 transition-colors"
+                                        >
+                                            <Camera size={14} className="text-purple-400" />
+                                            <span>Take Photo</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="flex-1 py-2.5 bg-black/40 hover:bg-zinc-800 border border-white/10 rounded-xl text-xs text-zinc-300 flex items-center justify-center gap-1.5 transition-colors"
+                                        >
+                                            <Upload size={14} className="text-blue-400" />
+                                            <span>Upload Image</span>
+                                        </button>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleFileUpload}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="pt-2 flex justify-end gap-2 border-t border-white/5">
+                                <button
+                                    onClick={() => { setIsCreating(false); stopCamera(); }}
+                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-400 text-xs rounded-xl"
+                                >
+                                    Cancel
+                                </button>
                                 <button
                                     onClick={handleCreatePerspective}
                                     disabled={!newPerspectiveContent.trim()}
-                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
+                                    className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-colors shadow-lg shadow-purple-950/30"
                                 >
-                                    Share
+                                    Share Perspective
                                 </button>
                             </div>
                         </motion.div>
@@ -309,14 +411,14 @@ export default function StoriesRail() {
                 )}
             </AnimatePresence>
 
-            {/* Professional Brief Viewer (Modal Style) */}
+            {/* Slide Reel Viewer */}
             <AnimatePresence>
-                {selectedBriefIndex !== null && (
+                {selectedBriefIndex !== null && perspectives[selectedBriefIndex] && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+                        className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
                         onClick={closeViewer}
                     >
                         <motion.div
@@ -324,116 +426,78 @@ export default function StoriesRail() {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 10 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-zinc-900 w-full max-w-2xl rounded-2xl border border-zinc-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+                            className="bg-zinc-950 w-full max-w-xl rounded-3xl border border-purple-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
                         >
-                            {/* Brief Header */}
-                            <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/95 sticky top-0 z-50">
+                            {/* Header */}
+                            <div className="p-4 border-b border-white/5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border border-zinc-700">
-                                        {(perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.image : perspectives[selectedBriefIndex].userImage) ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.image : perspectives[selectedBriefIndex].userImage}
-                                                alt=""
-                                                className="w-full h-full object-cover"
-                                            />
+                                    <div className="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
+                                        {perspectives[selectedBriefIndex].userImage ? (
+                                            <img src={perspectives[selectedBriefIndex].userImage} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xs text-white font-bold">
-                                                {(perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.name : perspectives[selectedBriefIndex].userName).charAt(0)}
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-white font-bold bg-purple-600">
+                                                {perspectives[selectedBriefIndex].userName.charAt(0)}
                                             </div>
                                         )}
                                     </div>
                                     <div>
                                         <h3 className="text-white font-bold text-sm">
-                                            {perspectives[selectedBriefIndex].userId === 'u-current' ? userProfile.name : perspectives[selectedBriefIndex].userName}
+                                            {perspectives[selectedBriefIndex].userName}
                                         </h3>
                                         <p className="text-zinc-400 text-xs">
-                                            {perspectives[selectedBriefIndex].userId === 'u-current' ? (userProfile.bio?.split("•")[0]?.trim() || "Member") : perspectives[selectedBriefIndex].role}
-                                            {perspectives[selectedBriefIndex].location && <span> • {perspectives[selectedBriefIndex].location}</span>}
+                                            {perspectives[selectedBriefIndex].role}
                                         </p>
                                     </div>
                                 </div>
+
                                 <div className="flex items-center gap-2">
-                                    <div className={`px-2 py-0.5 rounded-full border ${perspectives[selectedBriefIndex].status === 'Perspective' ? 'border-blue-500/30 bg-blue-500/10 text-blue-400' : 'border-purple-500/30 bg-purple-500/10 text-purple-400'} text-xs font-medium`}>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full border bg-purple-500/10 text-purple-300 border-purple-500/30 font-mono">
                                         {perspectives[selectedBriefIndex].status}
-                                    </div>
-                                    <button onClick={closeViewer} className="p-2 ml-2 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors" title="Close Perspective">
-                                        <X size={20} />
+                                    </span>
+                                    <button onClick={closeViewer} className="p-1.5 text-zinc-400 hover:text-white rounded-lg">
+                                        <X size={18} />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Progress Bar */}
-                            <div className="flex gap-1 px-4 pt-1 pb-1 bg-zinc-900">
-                                {perspectives[selectedBriefIndex].items.map((item, idx) => (
-                                    <div key={item.id} className="h-1 flex-1 bg-zinc-800 rounded-full overflow-hidden">
-                                        <motion.div
-                                            className={`h-full ${perspectives[selectedBriefIndex].status === 'Perspective' ? 'bg-blue-500' : 'bg-white'}`}
-                                            initial={{ width: "0%" }}
-                                            animate={{ width: idx < currentSlideIndex ? "100%" : idx === currentSlideIndex ? "100%" : "0%" }}
-                                            transition={{ duration: idx === currentSlideIndex ? item.duration / 1000 : 0, ease: "linear" }}
+                            {/* Content */}
+                            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+                                <h2 className="text-lg font-bold text-white">
+                                    {perspectives[selectedBriefIndex].title}
+                                </h2>
+
+                                {perspectives[selectedBriefIndex].items?.[currentSlideIndex]?.url && (
+                                    <div className="rounded-xl overflow-hidden border border-white/10 max-h-60">
+                                        <img 
+                                            src={perspectives[selectedBriefIndex].items[currentSlideIndex].url} 
+                                            alt="" 
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
-                                ))}
+                                )}
+
+                                <p className="text-sm text-zinc-200 leading-relaxed bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                                    {perspectives[selectedBriefIndex].items?.[currentSlideIndex]?.content || "Exploring structural primitives and design trade-offs."}
+                                </p>
                             </div>
 
-                            {/* Content Area */}
-                            <div className="relative flex-1 min-h-[400px] bg-zinc-950 flex flex-col">
-                                {/* Navigation Tap Zones */}
-                                <div className="absolute inset-0 z-10 flex">
-                                    <div className="w-1/4 h-full cursor-w-resize z-20" onClick={handlePrevSlide}></div>
-                                    <div className="w-1/2 h-full z-0 pointer-events-none"></div> {/* Center allows clicking content if needed later */}
-                                    <div className="w-1/4 h-full cursor-e-resize z-20" onClick={handleNextSlide}></div>
-                                </div>
-
-                                <div className="z-20 flex-1 flex flex-col justify-center p-8 md:p-12 overflow-y-auto">
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={currentSlideIndex}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="w-full h-full flex flex-col items-center justify-center"
-                                        >
-                                            {perspectives[selectedBriefIndex].items[currentSlideIndex].type === 'image' ? (
-                                                <div className="w-full h-full flex flex-col items-center justify-center">
-                                                    <div className="relative rounded-xl overflow-hidden border border-zinc-800 bg-black shadow-2xl max-h-[50vh] w-auto">
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img
-                                                            src={perspectives[selectedBriefIndex].items[currentSlideIndex].url}
-                                                            alt="Content"
-                                                            className="max-h-full max-w-full object-contain"
-                                                        />
-                                                    </div>
-                                                    {perspectives[selectedBriefIndex].items[currentSlideIndex].caption && (
-                                                        <div className="mt-4 p-4 text-sm text-zinc-300 text-center max-w-lg font-medium">
-                                                            {perspectives[selectedBriefIndex].items[currentSlideIndex].caption}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className={`w-full p-10 md:p-16 rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/50 flex flex-col items-center justify-center text-center shadow-inner`}>
-                                                    <Briefcase className="text-zinc-600 mb-6 opacity-50" size={48} />
-                                                    <p className="text-2xl md:text-3xl font-serif font-medium text-white leading-relaxed max-w-2xl">
-                                                        &quot;{perspectives[selectedBriefIndex].items[currentSlideIndex].content}&quot;
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </motion.div>
-                                    </AnimatePresence>
-                                </div>
-                            </div>
-
-                            {/* Footer Actions */}
-                            <div className="p-4 border-t border-zinc-800 bg-zinc-900 flex gap-3 z-30">
-                                <input
-                                    type="text"
-                                    placeholder="Reply specifically to this perspective..."
-                                    className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-blue-500/50 transition-colors"
-                                />
-                                <button className="p-3 text-zinc-400 hover:text-white bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition-colors" title="Like"><Heart size={20} /></button>
-                                <button className="p-3 text-blue-400 hover:text-blue-300 bg-blue-500/10 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-colors" title="Send"><Send size={20} /></button>
+                            {/* Footer Nav */}
+                            <div className="p-4 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400">
+                                <button
+                                    onClick={handlePrevSlide}
+                                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-white"
+                                >
+                                    ← Previous
+                                </button>
+                                <span className="font-mono text-[11px]">
+                                    Slide {currentSlideIndex + 1} of {perspectives[selectedBriefIndex].items?.length || 1}
+                                </span>
+                                <button
+                                    onClick={handleNextSlide}
+                                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-xl text-white font-bold"
+                                >
+                                    Next →
+                                </button>
                             </div>
                         </motion.div>
                     </motion.div>

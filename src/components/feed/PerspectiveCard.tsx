@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Sparkles, MessageSquare, Heart, Bookmark, Share2, MoreHorizontal, Layers, ArrowUpRight } from "lucide-react";
+import { Play, MessageSquare, Heart, Bookmark, Share2, MoreHorizontal, Layers, ArrowUpRight, Check } from "lucide-react";
 import Link from "next/link";
 import { Perspective, PerspectiveStatus } from "@/lib/types/schema";
 import { useGlobalState } from "@/context/GlobalStateContext";
@@ -14,14 +14,28 @@ interface PerspectiveCardProps {
 }
 
 export default function PerspectiveCard({ perspective, onOpenViewer }: PerspectiveCardProps) {
-    const { toggleSave, savedPosts } = useGlobalState();
+    const { 
+        toggleSave, 
+        savedPosts, 
+        comments, 
+        followingUsers, 
+        toggleFollowUser 
+    } = useGlobalState();
+
     const [isCommentOpen, setIsCommentOpen] = useState(false);
     const [isSafetyOpen, setIsSafetyOpen] = useState(false);
-    const [likes, setLikes] = useState(18);
+    const [likes, setLikes] = useState(24);
     const [hasLiked, setHasLiked] = useState(false);
+    const [shareCopied, setShareCopied] = useState(false);
 
     const numericId = parseInt(perspective.id.replace(/\D/g, "")) || 42;
     const isSaved = savedPosts.includes(numericId);
+
+    const authorId = perspective.userName.toLowerCase().replace(/\s+/g, "-");
+    const isFollowing = followingUsers.includes(authorId) || followingUsers.includes(perspective.userId);
+
+    const currentComments = comments.filter(c => String(c.targetId) === String(perspective.id));
+    const totalComments = currentComments.length;
 
     const handleLike = () => {
         setLikes(prev => hasLiked ? prev - 1 : prev + 1);
@@ -41,8 +55,9 @@ export default function PerspectiveCard({ perspective, onOpenViewer }: Perspecti
                 console.log(e);
             }
         } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-            navigator.clipboard.writeText(shareData.url);
-            alert("Perspective link copied to clipboard!");
+            await navigator.clipboard.writeText(shareData.url);
+            setShareCopied(true);
+            setTimeout(() => setShareCopied(false), 2000);
         }
     };
 
@@ -59,10 +74,10 @@ export default function PerspectiveCard({ perspective, onOpenViewer }: Perspecti
             {/* Header */}
             <div className="flex items-center justify-between">
                 <Link 
-                    href={`/profile/${perspective.userName.toLowerCase().replace(/\s+/g, "-")}`}
+                    href={`/profile/${authorId}`}
                     className="flex items-center gap-3 hover:opacity-90 transition-opacity"
                 >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 p-0.5 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 p-0.5 flex items-center justify-center text-white font-bold text-sm overflow-hidden shadow-md">
                         {perspective.userImage ? (
                             <img src={perspective.userImage} alt={perspective.userName} className="w-full h-full object-cover rounded-full" />
                         ) : (
@@ -88,17 +103,29 @@ export default function PerspectiveCard({ perspective, onOpenViewer }: Perspecti
                     </div>
                 </Link>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => toggleFollowUser(authorId)}
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all ${
+                            isFollowing
+                                ? "bg-white/10 text-zinc-300 hover:bg-white/20"
+                                : "bg-purple-600/15 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30"
+                        }`}
+                    >
+                        {isFollowing ? "Following" : "+ Follow"}
+                    </button>
+
                     <button 
                         onClick={() => setIsSafetyOpen(true)}
                         className="p-1.5 text-zinc-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                        title="Options"
                     >
                         <MoreHorizontal size={16} />
                     </button>
                 </div>
             </div>
 
-            {/* Title & Craft Topic */}
+            {/* Title */}
             <div>
                 <h3 className="text-base font-bold text-white group-hover:text-purple-200 transition-colors">
                     {perspective.title}
@@ -115,7 +142,7 @@ export default function PerspectiveCard({ perspective, onOpenViewer }: Perspecti
                         <Layers size={13} /> {perspective.items?.length || 1} Perspective Slide{perspective.items?.length !== 1 ? "s" : ""}
                     </span>
                     <span className="text-[11px] text-zinc-400 group-hover/canvas:text-white flex items-center gap-1 transition-colors">
-                        Launch View <ArrowUpRight size={14} />
+                        Launch Reel <ArrowUpRight size={14} />
                     </span>
                 </div>
 
@@ -150,15 +177,24 @@ export default function PerspectiveCard({ perspective, onOpenViewer }: Perspecti
                         className="flex items-center gap-1.5 hover:text-blue-400 transition-colors"
                     >
                         <MessageSquare size={16} />
-                        <span>Discuss</span>
+                        <span>Discuss {totalComments > 0 ? `(${totalComments})` : ""}</span>
                     </button>
 
                     <button 
                         onClick={handleShare}
                         className="flex items-center gap-1.5 hover:text-purple-400 transition-colors"
                     >
-                        <Share2 size={16} />
-                        <span>Share</span>
+                        {shareCopied ? (
+                            <>
+                                <Check size={14} className="text-emerald-400" />
+                                <span className="text-emerald-400 font-semibold">Copied!</span>
+                            </>
+                        ) : (
+                            <>
+                                <Share2 size={16} />
+                                <span>Share</span>
+                            </>
+                        )}
                     </button>
                 </div>
 

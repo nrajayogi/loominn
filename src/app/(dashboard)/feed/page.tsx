@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Search, Sparkles, Compass, Layers, Briefcase, Award, Megaphone, Plus } from "lucide-react";
+import { Search, Sparkles, Compass, Layers, Briefcase, Award, Megaphone, Plus, X, RefreshCw } from "lucide-react";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import StoriesRail from "@/components/feed/StoriesRail";
 import SuggestionNet from "@/components/feed/SuggestionNet";
@@ -23,8 +23,17 @@ export default function FeedPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState<FilterTab>("all");
     const [selectedPerspective, setSelectedPerspective] = useState<Perspective | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Build the polymorphic feed by combining state items
+    // Simulate initial loading to demonstrate high-fidelity skeleton states
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 600);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // Build polymorphic feed
     const feedItems: AnyFeedItem[] = useMemo(() => {
         const items: AnyFeedItem[] = [];
 
@@ -158,6 +167,17 @@ export default function FeedPage() {
         return items;
     }, [perspectives, contributions, posts]);
 
+    // Counts for tabs
+    const counts = useMemo(() => {
+        return {
+            all: feedItems.length,
+            perspectives: feedItems.filter(i => i.type === "perspective").length,
+            opportunities: feedItems.filter(i => i.type === "project_opportunity").length,
+            contributions: feedItems.filter(i => i.type === "contribution").length,
+            discussions: feedItems.filter(i => i.type === "post" || i.type === "announcement").length,
+        };
+    }, [feedItems]);
+
     // Filtering logic based on Active Tab and Search Query
     const filteredFeed = useMemo(() => {
         return feedItems.filter(item => {
@@ -258,14 +278,15 @@ export default function FeedPage() {
                         placeholder="Search perspectives, projects, contributions..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                        className="w-full pl-10 pr-10 py-2.5 bg-zinc-900/80 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
                     />
                     {searchQuery && (
                         <button
                             onClick={() => setSearchQuery("")}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5"
+                            title="Clear search"
                         >
-                            Clear
+                            <X size={15} />
                         </button>
                     )}
                 </div>
@@ -280,7 +301,7 @@ export default function FeedPage() {
                                 : "bg-zinc-900 text-zinc-400 hover:text-white border border-white/5"
                         }`}
                     >
-                        <Sparkles size={13} /> All Activity
+                        <Sparkles size={13} /> All ({counts.all})
                     </button>
 
                     <button
@@ -291,7 +312,7 @@ export default function FeedPage() {
                                 : "bg-zinc-900 text-zinc-400 hover:text-purple-300 border border-white/5"
                         }`}
                     >
-                        <Layers size={13} /> Perspectives ({perspectives.length})
+                        <Layers size={13} /> Perspectives ({counts.perspectives})
                     </button>
 
                     <button
@@ -302,7 +323,7 @@ export default function FeedPage() {
                                 : "bg-zinc-900 text-zinc-400 hover:text-blue-300 border border-white/5"
                         }`}
                     >
-                        <Briefcase size={13} /> Opportunities (2)
+                        <Briefcase size={13} /> Opportunities ({counts.opportunities})
                     </button>
 
                     <button
@@ -313,7 +334,7 @@ export default function FeedPage() {
                                 : "bg-zinc-900 text-zinc-400 hover:text-emerald-300 border border-white/5"
                         }`}
                     >
-                        <Award size={13} /> Proof of Work ({contributions.length})
+                        <Award size={13} /> Proof of Work ({counts.contributions})
                     </button>
 
                     <button
@@ -324,29 +345,91 @@ export default function FeedPage() {
                                 : "bg-zinc-900 text-zinc-400 hover:text-pink-300 border border-white/5"
                         }`}
                     >
-                        <Megaphone size={13} /> Discussions ({posts.length})
+                        <Megaphone size={13} /> Discussions ({counts.discussions})
                     </button>
                 </div>
             </div>
 
             {/* Polymorphic Feed Stream */}
             <div className="space-y-5">
-                {filteredFeed.length === 0 ? (
-                    <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-white/5 mx-auto flex items-center justify-center text-zinc-400">
-                            <Compass size={24} />
-                        </div>
-                        <h3 className="text-white font-bold text-sm">No Activity Matches Your Criteria</h3>
-                        <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                            Try adjusting your search query or reset the filter to view all perspectives and opportunities.
-                        </p>
-                        <button
-                            onClick={() => { setActiveTab("all"); setSearchQuery(""); }}
-                            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-xl transition-colors"
-                        >
-                            Reset Filters
-                        </button>
+                {isLoading ? (
+                    // High fidelity Skeleton Loading State
+                    <div className="space-y-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="bg-zinc-900/40 border border-white/5 rounded-2xl p-5 space-y-4 animate-pulse">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800" />
+                                    <div className="space-y-1.5 flex-1">
+                                        <div className="h-3.5 bg-zinc-800 rounded w-1/3" />
+                                        <div className="h-2.5 bg-zinc-850 rounded w-1/4" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="h-4 bg-zinc-800 rounded w-3/4" />
+                                    <div className="h-3 bg-zinc-850 rounded w-full" />
+                                    <div className="h-3 bg-zinc-850 rounded w-5/6" />
+                                </div>
+                                <div className="h-24 bg-zinc-950/60 rounded-xl" />
+                            </div>
+                        ))}
                     </div>
+                ) : filteredFeed.length === 0 ? (
+                    searchQuery ? (
+                        // No Search Results State
+                        <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-white/5 mx-auto flex items-center justify-center text-zinc-400">
+                                <Search size={22} />
+                            </div>
+                            <h3 className="text-white font-bold text-sm">No matches for &ldquo;{searchQuery}&rdquo;</h3>
+                            <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                                We couldn&apos;t find any perspectives, project roles, or verified proof matching your search query.
+                            </p>
+                            <button
+                                onClick={() => setSearchQuery("")}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-md"
+                            >
+                                Clear Search Query
+                            </button>
+                        </div>
+                    ) : (
+                        // Empty Content State per category
+                        <div className="text-center py-16 px-4 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-white/5 mx-auto flex items-center justify-center text-zinc-400">
+                                <Compass size={24} />
+                            </div>
+                            <h3 className="text-white font-bold text-sm">
+                                {activeTab === "perspectives" && "No Perspectives Shared Yet"}
+                                {activeTab === "opportunities" && "No Open Project Opportunities"}
+                                {activeTab === "contributions" && "No Proof of Work Logged Yet"}
+                                {activeTab === "discussions" && "No Active Discussions"}
+                                {activeTab === "all" && "Feed Stream is Quiet"}
+                            </h3>
+                            <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                                {activeTab === "perspectives" && "Be the first to share an experiment, learning, or technical slide reel."}
+                                {activeTab === "opportunities" && "Launch a collaborative workspace and open roles for peer engineers."}
+                                {activeTab === "contributions" && "Verify completed milestone tasks to populate the proof of work ledger."}
+                                {activeTab === "discussions" && "Start a technical discussion or question to engage the network."}
+                                {activeTab === "all" && "Start interacting or switch to the Discover hub to find active peers."}
+                            </p>
+
+                            <div className="pt-2 flex justify-center gap-2">
+                                {activeTab !== "all" && (
+                                    <button
+                                        onClick={() => setActiveTab("all")}
+                                        className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-xl transition-colors"
+                                    >
+                                        View All Content
+                                    </button>
+                                )}
+                                <Link
+                                    href="/create"
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-md"
+                                >
+                                    + Create New
+                                </Link>
+                            </div>
+                        </div>
+                    )
                 ) : (
                     filteredFeed.map(item => {
                         switch (item.type) {
