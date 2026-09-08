@@ -89,6 +89,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                 <h2 className="text-xl font-bold text-white mb-6">Recent Work</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <ProjectCard
+                        id="loominn-concept"
                         title="Loominn Rebuild Concept"
                         description="A complete redesign of the Loominn platform with a focus on community and collaboration."
                         author={username}
@@ -98,6 +99,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                         tags={["Next.js", "Tailwind", "Web"]}
                     />
                     <ProjectCard
+                        id="neon-city"
                         title="Neon City UI Kit"
                         description="Futuristic UI kit for your next project."
                         author={username}

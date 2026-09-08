@@ -8,21 +8,49 @@ import { useGlobalState } from "@/context/GlobalStateContext";
 import StoriesRail from "@/components/feed/StoriesRail";
 
 import { motion } from "framer-motion";
-import { Heart, MessageSquare, ArrowUpRight, Zap, Star, Projector } from "lucide-react";
+import { Heart, MessageSquare, ArrowUpRight, Zap, Star } from "lucide-react";
+import { useMemo } from "react";
 
-const SPOTLIGHT_PROJECT = {
-  title: "NeuroLink AI Interface",
-  description: "A next-generation brain-computer interface for seamless digital interaction. Experience the future of thought-controlled computing.",
-  author: "Sarah Chen",
-  tags: ["AI", "Neurotech", "React"],
-  likes: 1240,
-  image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80"
-};
+// Types for the mixed feed
+type FeedItemType = "social" | "project" | "milestone";
 
-const FEED_ITEMS = [
+interface BaseFeedItem {
+  id: number | string;
+  type: FeedItemType;
+  time?: string;
+  likes?: number;
+}
+
+interface SocialFeedItem extends BaseFeedItem {
+  type: "social";
+  user: string;
+  avatar: string;
+  content: string;
+  comments?: number;
+}
+
+interface ProjectFeedItem extends BaseFeedItem {
+  type: "project";
+  title: string;
+  description: string;
+  status: string;
+  color: string;
+  author: string;
+}
+
+interface MilestoneFeedItem extends BaseFeedItem {
+  type: "milestone";
+  user: string;
+  content: string;
+  project: string;
+}
+
+type FeedItem = SocialFeedItem | ProjectFeedItem | MilestoneFeedItem;
+
+const STATIC_FEED_ITEMS: FeedItem[] = [
   {
     type: "social",
-    id: 101, // ID shifted to avoid conflict with potential local IDs if any
+    id: "static-1",
     user: "Mike Ross",
     avatar: "MR",
     content: "Just pushed the new authentication flow! 🔒 It's smoother than ever. #webdev #security",
@@ -32,7 +60,7 @@ const FEED_ITEMS = [
   },
   {
     type: "project",
-    id: 102,
+    id: "static-2",
     title: "EcoTrack Mobile",
     description: "Sustainability tracking for everyday life.",
     status: "Launched",
@@ -42,54 +70,82 @@ const FEED_ITEMS = [
   },
   {
     type: "social",
-    id: 103,
+    id: "static-3",
     user: "Jessica Lee",
     avatar: "JL",
     content: "Can anyone recommend a good library for 3D data visualization in React? 🤔",
     time: "1h ago",
     likes: 12,
     comments: 24
-  },
-  {
-    type: "milestone",
-    id: 104,
-    user: "David Kim",
-    avatar: "DK",
-    content: "just reached 1,000 stars on GitHub!",
-    project: "OpenUI",
-    time: "2h ago"
-  },
-  {
-    type: "project",
-    id: 105,
-    title: "Mars Colonizer",
-    description: "Simulation game for Red Planet survival.",
-    status: "Beta",
-    color: "from-orange-500 to-red-700",
-    likes: 2300,
-    author: "SpaceX Fan"
   }
 ];
 
 export default function Home() {
   const { data: session } = useSession();
-  const { posts, userProfile } = useGlobalState();
+  const { posts, userProfile, userProjects } = useGlobalState();
   const router = useRouter();
 
-  // Convert global user posts to feed format
-  const globalFeedItems = posts.map(post => ({
-    type: "social",
-    id: post.id,
-    user: userProfile.name,
-    avatar: (userProfile.name?.charAt(0) || "U") + (userProfile.name?.split(" ")[1]?.charAt(0) || ""),
-    content: post.content,
-    time: post.time,
-    likes: post.likes,
-    comments: post.comments
-  }));
+  // 1. Dynamic Spotlight: Find the latest approved project or fallback
+  const spotlightProject = useMemo(() => {
+    // Try to find a featured/approved project from user projects first
+    const approved = userProjects.find(p => p.status === 'approved');
+    if (approved) {
+      return {
+        title: approved.title,
+        description: approved.description,
+        author: userProfile.name,
+        tags: ["Featured", "New"],
+        likes: 0,
+        image: approved.slides && approved.slides.length > 0 ? approved.slides[0] : "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80",
+        isDynamic: true
+      };
+    }
+    // Fallback static spotlight
+    return {
+      title: "NeuroLink AI Interface",
+      description: "A next-generation brain-computer interface for seamless digital interaction. Experience the future of thought-controlled computing.",
+      author: "Sarah Chen",
+      tags: ["AI", "Neurotech", "React"],
+      likes: 1240,
+      image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80",
+      isDynamic: false
+    };
+  }, [userProjects, userProfile]);
 
-  // Merge: User posts first, then static items
-  const combinedFeed = [...globalFeedItems, ...FEED_ITEMS];
+  // 2. Dynamic Feed Construction
+  const feedItems = useMemo<FeedItem[]>(() => {
+    // Convert global posts to feed items
+    const globalItems: FeedItem[] = posts.map(post => {
+      // If post has project data, show as project card or update? 
+      // For now, let's treat posts as social updates mostly, unless we want a specific project view
+      if (post.projectData) {
+        return {
+          type: "project",
+          id: `global-post-${post.id}`,
+          title: post.projectData.title,
+          description: post.content || post.projectData.description,
+          status: "New",
+          color: "from-blue-600 to-purple-600",
+          author: userProfile.name,
+          likes: post.likes,
+          time: post.time
+        };
+      }
+
+      return {
+        type: "social",
+        id: `global-post-${post.id}`,
+        user: userProfile.name,
+        avatar: (userProfile.name?.charAt(0) || "U") + (userProfile.name?.split(" ")[1]?.charAt(0) || ""),
+        content: post.content,
+        time: post.time,
+        likes: post.likes,
+        comments: post.comments
+      };
+    });
+
+    return [...globalItems, ...STATIC_FEED_ITEMS];
+  }, [posts, userProfile]);
 
   const handleInteract = () => {
     if (!session) {
@@ -101,16 +157,16 @@ export default function Home() {
     <div className="space-y-12 pb-24 relative">
       <Link href="/" className="absolute top-8 left-1/2 -translate-x-1/2 z-50 hover:opacity-80 transition-opacity">
         <div className="w-24 h-24 flex items-center justify-center">
-          <img src="/logo.png" alt="Loominn" className="w-full h-full object-contain drop-shadow-2xl" />
+          <img src="/logo.png" alt="Loominn Logo" className="w-12 h-12 object-contain hover:scale-110 transition-transform" />
         </div>
-      </Link >
+      </Link>
 
       {/* Project Spotlight (The USP) */}
-      < section className="relative h-[60vh] w-full rounded-none overflow-hidden group cursor-pointer" >
+      <section className="relative h-[60vh] w-full rounded-none overflow-hidden group cursor-pointer" onClick={() => router.push('/feed')}>
         <div className="absolute inset-0 bg-black/20 z-10 group-hover:bg-black/10 transition-colors duration-500" />
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
-          style={{ backgroundImage: `url(${SPOTLIGHT_PROJECT.image})` }}
+          style={{ backgroundImage: `url(${spotlightProject.image})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-20" />
 
@@ -124,7 +180,7 @@ export default function Home() {
             <span className="px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1">
               <Zap size={12} className="fill-current" /> Spotlight
             </span>
-            <span className="text-zinc-300 text-sm">by {SPOTLIGHT_PROJECT.author}</span>
+            <span className="text-zinc-300 text-sm">by {spotlightProject.author}</span>
           </motion.div>
 
           <motion.h1
@@ -133,7 +189,7 @@ export default function Home() {
             transition={{ delay: 0.3 }}
             className="text-4xl md:text-6xl font-bold text-white mb-4 max-w-3xl leading-tight"
           >
-            {SPOTLIGHT_PROJECT.title}
+            {spotlightProject.title}
           </motion.h1>
 
           <motion.p
@@ -142,7 +198,7 @@ export default function Home() {
             transition={{ delay: 0.4 }}
             className="text-lg text-zinc-300 max-w-2xl mb-8 line-clamp-2"
           >
-            {SPOTLIGHT_PROJECT.description}
+            {spotlightProject.description}
           </motion.p>
 
           <motion.div
@@ -156,19 +212,19 @@ export default function Home() {
             </button>
             <div className="flex items-center gap-2 text-white">
               <Heart className="fill-current text-red-500" />
-              <span className="font-bold">{SPOTLIGHT_PROJECT.likes}</span>
+              <span className="font-bold">{spotlightProject.likes}</span>
             </div>
           </motion.div>
         </div>
-      </section >
+      </section>
 
       {/* Stories Rail */}
-      < section className="px-4 md:px-8 max-w-7xl mx-auto z-40 relative" >
+      <section className="px-4 md:px-8 max-w-7xl mx-auto z-40 relative">
         <StoriesRail />
-      </section >
+      </section>
 
       {/* Mosaic Feed */}
-      < section className="px-4 md:px-8 max-w-7xl mx-auto" >
+      <section className="px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-white">Trending Now</h2>
           <div className="flex gap-2">
@@ -179,7 +235,7 @@ export default function Home() {
         </div>
 
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-          {combinedFeed.map((item) => (
+          {feedItems.map((item) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
@@ -204,7 +260,7 @@ export default function Home() {
                   </p>
                   <div className="flex items-center gap-4 text-zinc-500 text-xs">
                     <ReactionButton initialCount={item.likes || 0} />
-                    <button className="flex items-center gap-1 hover:text-blue-500 transition-colors"><MessageSquare size={14} /> {item.comments}</button>
+                    <button className="flex items-center gap-1 hover:text-blue-500 transition-colors"><MessageSquare size={14} /> {item.comments || 0}</button>
                   </div>
                 </div>
               )}
@@ -212,12 +268,10 @@ export default function Home() {
               {/* Project Card */}
               {item.type === "project" && (
                 <div className="group relative bg-zinc-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300">
-                  <div className={`h-32 bg-gradient-to-br ${//@ts-ignore
-                    item.color} relative p-6 flex flex-col justify-between`}>
+                  <div className={`h-32 bg-gradient-to-br ${item.color} relative p-6 flex flex-col justify-between`}>
                     <div className="flex justify-between items-start">
                       <span className="px-2 py-1 rounded-md bg-black/20 backdrop-blur-md text-xs text-white font-medium">
-                        {//@ts-ignore
-                          item.status}
+                        {item.status}
                       </span>
                       <button className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors">
                         <ArrowUpRight size={14} />
@@ -225,13 +279,10 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="text-lg font-bold text-white mb-1">{//@ts-ignore
-                      item.title}</h3>
-                    <p className="text-zinc-400 text-sm mb-4">{//@ts-ignore
-                      item.description}</p>
+                    <h3 className="text-lg font-bold text-white mb-1">{item.title}</h3>
+                    <p className="text-zinc-400 text-sm mb-4">{item.description}</p>
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                      <span className="text-xs text-zinc-500">by {//@ts-ignore
-                        item.author}</span>
+                      <span className="text-xs text-zinc-500">by {item.author}</span>
                       <div className="flex items-center gap-1 text-zinc-400 text-xs">
                         <Star size={12} className="fill-current text-yellow-500" /> {item.likes}
                       </div>
@@ -250,15 +301,14 @@ export default function Home() {
                     <p className="text-white text-sm">
                       <span className="font-bold">{item.user}</span> {item.content}
                     </p>
-                    <p className="text-xs text-yellow-500/70 mt-1">{//@ts-ignore
-                      item.project} • {item.time}</p>
+                    <p className="text-xs text-yellow-500/70 mt-1">{item.project} • {item.time}</p>
                   </div>
                 </div>
               )}
             </motion.div>
           ))}
         </div>
-      </section >
-    </div >
+      </section>
+    </div>
   );
 }

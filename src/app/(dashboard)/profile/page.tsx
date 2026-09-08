@@ -1,11 +1,12 @@
 "use client";
 
-import { Share2, MoreHorizontal, Heart, Award, Image, Link as LinkIcon, MessageSquare, Camera, Sliders, Save, X, Move } from "lucide-react";
+import { Share2, MoreHorizontal, Heart, Award, Image, Link as LinkIcon, MessageSquare, Camera, Sliders, Save, X, Move, Trash2, Copy, Pin } from "lucide-react";
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import { useGlobalState } from "@/context/GlobalStateContext";
+import SkillScoreBadge from "@/components/ui/SkillScoreBadge";
 
 const GRADIENT_PRESETS = [
     { id: 'cosmic', name: 'Cosmic', class: 'from-blue-600 to-purple-600' },
@@ -34,12 +35,13 @@ const USER_PROJECTS = [
 
 export default function ProfilePage() {
     const { data: session } = useSession();
-    const { userProfile, updateUserProfile, posts, addPost, toggleLike, privacySettings, updatePrivacySettings } = useGlobalState();
+    const { userProfile, updateUserProfile, posts, addPost, deletePost, toggleLike, privacySettings, updatePrivacySettings, userProjects, toggleProjectLike } = useGlobalState();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // Local state
-    const [activeTab, setActiveTab] = useState("Projects");
+    const [activeTab, setActiveTab] = useState("Activity");
     const [newPostContent, setNewPostContent] = useState("");
+    const [activePostMenu, setActivePostMenu] = useState<number | null>(null);
     const [isPosting, setIsPosting] = useState(false);
     const [postSuccess, setPostSuccess] = useState(false);
     const coverInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +51,11 @@ export default function ProfilePage() {
 
     // Live Location Tracking
     useEffect(() => {
-        if (!navigator.geolocation) return;
+        // Only run if tracking is enabled in settings
+        if (!navigator.geolocation || !privacySettings?.locationTracking) {
+            setIsLiveLocation(false);
+            return;
+        }
 
         const updateLocation = (position: GeolocationPosition) => {
             const { latitude, longitude } = position.coords;
@@ -71,11 +77,14 @@ export default function ProfilePage() {
                         }
                     }
                 })
-                .catch(err => console.error("Geocoding error:", err));
+                .catch(err => console.warn("Geocoding error (non-critical):", err));
         };
 
         const errorLocation = (err: GeolocationPositionError) => {
-            console.error("Geolocation denied or error:", err);
+            // Silently fail on permission denied to avoid console spam
+            if (err.code !== err.PERMISSION_DENIED) {
+                console.warn("Geolocation warning:", err.message);
+            }
             setIsLiveLocation(false);
         };
 
@@ -87,7 +96,7 @@ export default function ProfilePage() {
         });
 
         return () => navigator.geolocation.clearWatch(watchId);
-    }, [userProfile.location]); // Dependency on location to prevent re-running if stable, but updated via Geolocation
+    }, [userProfile.location, privacySettings?.locationTracking]); // Dependency on location to prevent re-running if stable, but updated via Geolocation
 
     const handlePostSubmit = async () => {
         if (!newPostContent.trim()) return;
@@ -101,6 +110,19 @@ export default function ProfilePage() {
         setIsPosting(false);
         setPostSuccess(true);
         setTimeout(() => setPostSuccess(false), 3000);
+    };
+
+    const handleDeletePost = (id: number) => {
+        if (confirm("Are you sure you want to delete this post?")) {
+            deletePost(id);
+            setActivePostMenu(null);
+        }
+    };
+
+    const handleCopyLink = (id: number) => {
+        navigator.clipboard.writeText(`https://loominn.com/post/${id}`);
+        alert("Link copied to clipboard!");
+        setActivePostMenu(null);
     };
 
     const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,11 +154,16 @@ export default function ProfilePage() {
 
                     <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent flex items-end">
                         <div className="flex items-end gap-6">
-                            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-black bg-zinc-800 flex items-center justify-center text-zinc-400 text-3xl font-bold relative z-10 shadow-2xl overflow-hidden">
+                            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full border-4 border-black bg-zinc-800 flex items-center justify-center text-zinc-400 text-3xl font-bold relative z-10 shadow-2xl overflow-hidden group/avatar">
                                 {userProfile.image || session?.user?.image ? (
                                     <img src={userProfile.image || session?.user?.image || ""} alt="User Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     "RN"
+                                )}
+                                {userProfile.stats && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300 backdrop-blur-sm">
+                                        <SkillScoreBadge stats={userProfile.stats} size="sm" />
+                                    </div>
                                 )}
                             </div>
                             <div className="mb-2">
@@ -312,37 +339,17 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
                 {/* Stats Column */}
                 <div className="space-y-6">
-                    {/* Skill Mastery Card (New) */}
-                    <div className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-xl relative overflow-hidden group">
-                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full group-hover:bg-blue-500/30 transition-colors"></div>
-                        <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-                            <Award className="text-yellow-500" /> Skill Mastery
-                        </h2>
-                        <p className="text-xs text-blue-200 mb-4">Cumulative Score across all projects</p>
-
-                        <div className="text-center py-4">
-                            <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
-                                945
-                            </div>
-                            <div className="text-sm font-bold text-white">React Specialist</div>
+                    {/* Skill Score Card */}
+                    <div className="relative z-20 bg-zinc-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm flex flex-col items-center">
+                        <div className="flex items-center gap-2 mb-4 w-full">
+                            <Award className="text-yellow-500" size={20} />
+                            <span className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Orbit Score</span>
                         </div>
-
-                        <div className="space-y-2 mt-4">
-                            <div className="flex justify-between text-xs text-zinc-300">
-                                <span>Next.js</span>
-                                <span>Lvl 85</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 w-[85%]"></div>
-                            </div>
-                            <div className="flex justify-between text-xs text-zinc-300">
-                                <span>UI Design</span>
-                                <span>Lvl 72</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-                                <div className="h-full bg-purple-500 w-[72%]"></div>
-                            </div>
-                        </div>
+                        {userProfile.stats ? (
+                            <SkillScoreBadge stats={userProfile.stats} size="lg" expanded={true} />
+                        ) : (
+                            <div className="text-zinc-500 text-sm">No stats available</div>
+                        )}
                     </div>
 
                     {/* Quick Stats (Original) */}
@@ -378,7 +385,7 @@ export default function ProfilePage() {
                 <div className="md:col-span-2 xl:col-span-3">
                     {/* Tabs */}
                     <div className="flex gap-6 border-b border-white/10 mb-6">
-                        {["Projects", "Posts", "About"].map((tab) => (
+                        {["Activity", "Projects", "About"].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -431,8 +438,8 @@ export default function ProfilePage() {
                         </div>
                     )}
 
-                    {/* Posts Content */}
-                    {activeTab === "Posts" && (
+                    {/* Activity Content (Formerly Posts) */}
+                    {activeTab === "Activity" && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* New Post Input */}
                             <div className="bg-zinc-900/50 border border-white/10 rounded-2xl p-4">
@@ -479,51 +486,174 @@ export default function ProfilePage() {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Feed */}
-                            {posts.map((post) => (
-                                <div key={post.id} className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6 hover:bg-zinc-900/50 transition-colors">
-                                    <div className="flex items-start gap-4">
-                                        <div className="h-10 w-10 rounded-full bg-zinc-800 flex-shrink-0 overflow-hidden">
-                                            {userProfile.image || session?.user?.image ? (
-                                                <img src={userProfile.image || session?.user?.image || ""} alt="User" className="h-full w-full object-cover" />
-                                            ) : (
-                                                <div className="h-full w-full flex items-center justify-center text-zinc-500 text-xs">RN</div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h4 className="font-bold text-white text-sm">{userProfile.name}</h4>
-                                                    <span className="text-xs text-zinc-500">{post.time}</span>
+                            {/* Render User Projects in Stream */}
+                            {userProjects && userProjects.length > 0 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider pl-2">Project Applications</h3>
+                                    {userProjects.map((project: any) => (
+                                        <div key={project.id} className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6 hover:bg-zinc-900/50 transition-colors">
+                                            <div className="flex items-start gap-4">
+                                                <div className="h-10 w-10 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center text-zinc-400 overflow-hidden">
+                                                    {userProfile.image ? (
+                                                        <img src={userProfile.image} alt={userProfile.name} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <Award size={20} />
+                                                    )}
                                                 </div>
-                                                <button className="text-zinc-500 hover:text-white"><MoreHorizontal size={16} /></button>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="font-bold text-white text-sm">{userProfile.name}</h4>
+                                                            <span className="text-xs text-zinc-500">{project.submittedAt || "Just now"}</span>
+                                                        </div>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${project.status === 'approved' ? 'bg-green-500/10 text-green-400' :
+                                                            project.status === 'rejected' ? 'bg-red-500/10 text-red-400' :
+                                                                'bg-yellow-500/10 text-yellow-400'
+                                                            }`}>
+                                                            {project.status || 'Submitted'}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Rich Content Area */}
+                                                    <div className="mt-2 text-zinc-300 text-sm leading-relaxed">
+                                                        <p className="mb-3">I've just submitted a new project proposal for <span className="text-white font-medium">{project.title}</span>.</p>
+
+                                                        {/* Project Embedded Card */}
+                                                        <div className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden mt-3">
+                                                            {/* Mock Cover or Gradient */}
+                                                            <div className="h-32 bg-gradient-to-r from-blue-900/40 to-purple-900/40 relative">
+                                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                                    <Award className="text-white/20" size={48} />
+                                                                </div>
+                                                                <div className="absolute bottom-3 left-3">
+                                                                    <h5 className="font-bold text-white text-lg">{project.title}</h5>
+                                                                </div>
+                                                            </div>
+                                                            <div className="p-4">
+                                                                <p className="text-zinc-400 text-sm mb-3">
+                                                                    {project.description}
+                                                                </p>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {project.roles && project.roles.map((r: any, idx: number) => (
+                                                                        <span key={idx} className="text-xs bg-white/5 text-zinc-300 px-2 py-1 rounded border border-white/5">
+                                                                            {r.title}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Interaction Bar */}
+                                                    <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
+                                                        <button
+                                                            onClick={() => toggleProjectLike(project.id)}
+                                                            className="flex items-center gap-2 text-xs text-zinc-400 hover:text-pink-500 transition-colors group"
+                                                        >
+                                                            <Heart size={16} className={`group-hover:scale-110 transition-transform ${project.likes > 0 ? "fill-pink-500 text-pink-500" : ""}`} />
+                                                            {project.likes || 0}
+                                                        </button>
+                                                        <button className="flex items-center gap-2 text-xs text-zinc-400 hover:text-blue-400 transition-colors group">
+                                                            <MessageSquare size={16} className="group-hover:scale-110 transition-transform" />
+                                                            0
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <p className="text-zinc-300 text-sm mt-2 leading-relaxed">
-                                                {post.content}
-                                            </p>
-                                            {/* Interaction Bar */}
-                                            <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
-                                                <button
-                                                    onClick={() => toggleLike(post.id)}
-                                                    className="flex items-center gap-2 text-xs text-zinc-400 hover:text-pink-500 transition-colors group"
-                                                >
-                                                    <Heart size={16} className={`group-hover:scale-110 transition-transform ${post.likes > 0 ? "fill-pink-500 text-pink-500" : ""}`} />
-                                                    {post.likes}
-                                                </button>
-                                                <button className="flex items-center gap-2 text-xs text-zinc-400 hover:text-blue-400 transition-colors group">
-                                                    <MessageSquare size={16} className="group-hover:scale-110 transition-transform" />
-                                                    {post.comments}
-                                                </button>
-                                                <button className="flex items-center gap-2 text-xs text-zinc-400 hover:text-purple-400 transition-colors group">
-                                                    <Share2 size={16} className="group-hover:scale-110 transition-transform" />
-                                                    {post.shares}
-                                                </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Render User Posts */}
+                            {posts.filter(p => p.author === userProfile.name).length > 0 ? (
+                                posts.filter(p => p.author === userProfile.name).map((post) => (
+                                    <div key={post.id} className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6 hover:bg-zinc-900/50 transition-colors">
+                                        <div className="flex items-start gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-zinc-800 flex-shrink-0 overflow-hidden">
+                                                {userProfile.image || session?.user?.image ? (
+                                                    <img src={userProfile.image || session?.user?.image || ""} alt="User" className="h-full w-full object-cover" />
+                                                ) : (
+                                                    <div className="h-full w-full flex items-center justify-center text-zinc-500 text-xs">RN</div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h4 className="font-bold text-white text-sm">{userProfile.name}</h4>
+                                                        <span className="text-xs text-zinc-500">{post.time}</span>
+                                                    </div>
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={() => setActivePostMenu(activePostMenu === post.id ? null : post.id)}
+                                                            className="text-zinc-500 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+                                                        >
+                                                            <MoreHorizontal size={16} />
+                                                        </button>
+                                                        {activePostMenu === post.id && (
+                                                            <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
+                                                                <button
+                                                                    onClick={() => handleCopyLink(post.id)}
+                                                                    className="w-full text-left px-4 py-3 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2"
+                                                                >
+                                                                    <Copy size={14} /> Copy Link
+                                                                </button>
+                                                                <button className="w-full text-left px-4 py-3 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                                                                    <Pin size={14} /> Pin to Profile
+                                                                </button>
+                                                                <div className="h-px bg-white/5 mx-2 my-1"></div>
+                                                                <button
+                                                                    onClick={() => handleDeletePost(post.id)}
+                                                                    className="w-full text-left px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-500/10 flex items-center gap-2"
+                                                                >
+                                                                    <Trash2 size={14} /> Delete Post
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <p className="text-zinc-300 text-sm mt-2 leading-relaxed">
+                                                    {post.content}
+                                                </p>
+                                                <div className="mt-3">
+                                                    {/* Ensure Project Data is rendered if available */}
+                                                    {post.projectData && (
+                                                        <div className="bg-zinc-900 p-3 rounded-xl border border-white/5 mt-2">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-[10px] uppercase font-bold text-blue-400">Project Update</span>
+                                                            </div>
+                                                            <h5 className="font-bold text-white text-sm">{post.projectData.title}</h5>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* Interaction Bar */}
+                                                <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
+                                                    <button
+                                                        onClick={() => toggleLike(post.id)}
+                                                        className="flex items-center gap-2 text-xs text-zinc-400 hover:text-pink-500 transition-colors group"
+                                                    >
+                                                        <Heart size={16} className={`group-hover:scale-110 transition-transform ${post.likes > 0 ? "fill-pink-500 text-pink-500" : ""}`} />
+                                                        {post.likes}
+                                                    </button>
+                                                    <button className="flex items-center gap-2 text-xs text-zinc-400 hover:text-blue-400 transition-colors group">
+                                                        <MessageSquare size={16} className="group-hover:scale-110 transition-transform" />
+                                                        {post.comments}
+                                                    </button>
+                                                    <button className="flex items-center gap-2 text-xs text-zinc-400 hover:text-purple-400 transition-colors group">
+                                                        <Share2 size={16} className="group-hover:scale-110 transition-transform" />
+                                                        {post.shares}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))) : (
+                                (!userProjects || userProjects.length === 0) && (
+                                    <div className="text-center py-12 text-zinc-500">
+                                        <p>No activity yet. Share what you're working on!</p>
+                                    </div>
+                                )
+                            )}
                         </div>
                     )}
 

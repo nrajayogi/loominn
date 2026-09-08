@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, X, Video, Code, Globe, Zap, Shield, Rocket } from "lucide-react";
+import { ChevronRight, ChevronLeft, X, Video, Code, Globe, Zap, Shield, Rocket, Layers, Users, Building2, LineChart } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { DECK_VARIANTS, SlideData } from "@/lib/data/presentation-decks";
@@ -106,8 +106,8 @@ function PresentationContent({ deckId }: PresentationContentProps) {
                     ].map((mode) => (
                         <Link
                             key={mode.id}
-                            href={`/ presentation ? deck = ${mode.id} `}
-                            className={`text - xs font - mono px - 3 py - 1 rounded - full transition - all ${deckId === mode.id ? 'bg-blue-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/10'} `}
+                            href={`/presentation?deck=${mode.id}`}
+                            className={`text-xs font-mono px-3 py-1 rounded-full transition-all ${deckId === mode.id ? 'bg-blue-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/10'}`}
                         >
                             {mode.label}
                         </Link>
@@ -388,6 +388,110 @@ function PresentationContent({ deckId }: PresentationContentProps) {
                                             </motion.div>
 
                                         </div>
+                                    </div>
+                                </div>
+                            ) : slide.type === "supply-chain" ? (
+                                <div className="w-full h-full p-4 flex flex-col items-center justify-center relative">
+                                    {/* Background FX */}
+                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-500/10 via-black to-black -z-10" />
+
+                                    <h2 className="text-3xl font-bold text-white mb-8 tracking-wide uppercase border-b border-white/10 pb-2">{slide.title}</h2>
+
+                                    {/* Diagram Container */}
+                                    <div className="w-full max-w-6xl grid grid-cols-12 gap-4 text-xs md:text-sm font-semibold text-zinc-300">
+
+                                        {/* TOP ROW: 4 Boxes */}
+                                        <div className="col-span-3 bg-orange-500/20 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-orange-500/30 transition-colors">
+                                            <div className="p-2 bg-orange-500/20 rounded-lg"><Code className="text-orange-300" size={24} /></div>
+                                            <span className="text-center">PRODUCT MARKING</span>
+                                        </div>
+                                        <div className="col-span-3 bg-orange-500/20 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-orange-500/30 transition-colors">
+                                            <div className="p-2 bg-orange-500/20 rounded-lg"><Zap className="text-orange-300" size={24} /></div>
+                                            <span className="text-center">TRACK & TRACE</span>
+                                        </div>
+                                        <div className="col-span-3 bg-orange-500/20 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-orange-500/30 transition-colors">
+                                            <div className="p-2 bg-orange-500/20 rounded-lg"><Shield className="text-orange-300" size={24} /></div>
+                                            <span className="text-center">INSPECTION & ENFORCEMENT</span>
+                                        </div>
+                                        <div className="col-span-3 bg-orange-500/20 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-orange-500/30 transition-colors">
+                                            <div className="p-2 bg-orange-500/20 rounded-lg"><Users className="text-orange-300" size={24} /></div>
+                                            <span className="text-center">CONSUMER VERIFICATION</span>
+                                        </div>
+
+                                        {/* MIDDLE SECTION - FLOW */}
+                                        {/* Left: Inputs */}
+                                        <div className="col-span-2 flex flex-col gap-4 justify-center">
+                                            <div className="bg-orange-700/30 border border-orange-500/20 rounded-lg p-3 text-center vertical-text flex items-center justify-center h-24">IMPORTS</div>
+                                            <div className="bg-orange-700/30 border border-orange-500/20 rounded-lg p-3 text-center vertical-text flex items-center justify-center h-24">DOMESTIC</div>
+                                        </div>
+
+                                        {/* Center: Processing */}
+                                        <div className="col-span-4 bg-yellow-500/10 backdrop-blur-md border border-yellow-500/20 rounded-xl p-6 flex flex-col gap-4 justify-center relative">
+                                            {/* Arrow In */}
+                                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 text-white/20"><ChevronRight /></div>
+
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-yellow-500/20 rounded"><Zap size={16} className="text-yellow-200" /></div>
+                                                <span>AUTOMATED ACTIVATION</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-yellow-500/20 rounded"><Layers size={16} className="text-yellow-200" /></div>
+                                                <span>AGGREGATION & TRACEABILITY</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-yellow-500/20 rounded"><Zap size={16} className="text-yellow-200" /></div>
+                                                <span>MANUAL ACTIVATION</span>
+                                            </div>
+
+                                            {/* Arrow Out */}
+                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 text-white/20"><ChevronRight /></div>
+                                        </div>
+
+                                        {/* Right: Destination */}
+                                        <div className="col-span-6 bg-yellow-500/10 backdrop-blur-md border border-yellow-500/20 rounded-xl p-6 flex flex-col gap-4 justify-center">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-yellow-500/20 rounded"><Building2 size={16} className="text-yellow-200" /></div>
+                                                <span>WAREHOUSE</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-yellow-500/20 rounded"><Users size={16} className="text-yellow-200" /></div>
+                                                <span>RETAIL</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-yellow-500/20 rounded"><Globe size={16} className="text-yellow-200" /></div>
+                                                <span>EXPORTS</span>
+                                            </div>
+                                        </div>
+
+                                        {/* BOTTOM ROW: Infrastructure */}
+                                        <div className="col-span-12 bg-yellow-200/5 backdrop-blur-md border border-white/10 rounded-xl p-6 flex items-center justify-around mt-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-3 bg-white/5 rounded-full"><Layers size={24} className="text-white" /></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold">CENTRAL REPOSITORY</span>
+                                                    <span className="text-[10px] text-zinc-500">Immutable Ledger</span>
+                                                </div>
+                                            </div>
+                                            <div className="h-12 w-px bg-white/10" />
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-3 bg-white/5 rounded-full"><Code size={24} className="text-white" /></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold">INTEGRATION</span>
+                                                    <span className="text-[10px] text-zinc-500">API Gateway</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Footer Admin/Data */}
+                                        <div className="col-span-6 bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-center justify-center gap-2">
+                                            <Shield size={16} className="text-orange-400" />
+                                            <span>ADMINISTRATION</span>
+                                        </div>
+                                        <div className="col-span-6 bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 flex items-center justify-center gap-2">
+                                            <LineChart size={16} className="text-orange-400" />
+                                            <span>DATA SERVICES</span>
+                                        </div>
+
                                     </div>
                                 </div>
                             ) : slide.type === "founders" ? (

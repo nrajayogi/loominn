@@ -9,7 +9,7 @@ export default function PresentationFloater() {
     const pathname = usePathname();
 
     // Show ONLY on Home/Login pages as requested
-    const isHomePage = pathname === "/" || pathname === "/login" || pathname === "/home";
+    const isHomePage = pathname === "/" || pathname === "/login";
     if (!isHomePage) return null;
 
     return (

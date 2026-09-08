@@ -13,7 +13,20 @@ export interface RelevanceResult {
         skillScore: number;
         projectScore: number;
         domainScore: number;
+        trustScore?: number;
     };
+}
+
+function calculateTrustScore(stats: { velocity: number; complexity: number; risk: number }): number {
+    // Formula: Velocity * Complexity / Risk (Metric / 200 for scale)
+    // Adjusted log scale to keep it as a reasonable bonus (0-15)
+    if (!stats) return 0;
+    const { velocity, complexity, risk } = stats;
+    // Base Calculation: (V * C) / R
+    const formulaScore = (velocity * complexity) / (Math.max(risk, 1));
+    // Log scaling: 0-15 points
+    const bonus = Math.min(Math.floor(Math.log10(Math.max(formulaScore, 10)) * 5), 15);
+    return bonus;
 }
 
 /**
@@ -40,7 +53,7 @@ export function calculateRelevanceScore(
             score: 85,
             percentage: "85%",
             matches: { skills: [], projects: [], domains: [] },
-            breakdown: { skillScore: 45, projectScore: 20, domainScore: 20 }
+            breakdown: { skillScore: 15, projectScore: 20, domainScore: 10, trustScore: 10 }
         };
     }
 
@@ -58,31 +71,34 @@ export function calculateRelevanceScore(
     const projectScore = sharedProjects.length * 20;
     score += projectScore;
 
-    // 3. Domain Alignment (New Factor)
-    // Identify User's "Top Domains"
-    const userDomains = new Set<string>();
-    userProjects.forEach(p => {
-        const meta = PROJECT_REGISTRY[p];
-        if (meta) userDomains.add(meta.domain);
+    // 3. Domain Alignment (Bonus)
+    // Get domains from user's projects to build an interest profile
+    const userDomains = userProjects.map(p => PROJECT_REGISTRY[p]?.domain).filter(Boolean);
+    const partnerDomains = partnerProfile.projects.map(p => PROJECT_REGISTRY[p]?.domain).filter(Boolean);
+
+    // Find shared domains (intersection of arrays)
+    const sharedDomains = partnerDomains.filter(d => userDomains.includes(d));
+    // Unique shared domains to avoid double counting same domain multiple times if logic dictates, 
+    // but here we reward per matching project's domain roughly:
+    // Actually, let's just count how many of the partner's projects match the user's preferred domains.
+    const matchingDomainProjects = partnerProfile.projects.filter(p => {
+        const pDomain = PROJECT_REGISTRY[p]?.domain;
+        return userDomains.includes(pDomain);
     });
 
-    let domainScore = 0;
-    const matchedDomains: string[] = [];
-
-    // Check if Partner's projects fall into User's Top Domains
-    partnerProfile.projects.forEach(p => {
-        const meta = PROJECT_REGISTRY[p];
-        if (meta && userDomains.has(meta.domain)) {
-            // Bonus for working in a relevant domain
-            domainScore += 10;
-            if (!matchedDomains.includes(meta.domain)) {
-                matchedDomains.push(meta.domain);
-            }
-        }
-    });
+    // 10 points per matching domain project?
+    const domainScore = matchingDomainProjects.length * 10;
     score += domainScore;
 
-    // 4. Normalization / Clamping
+    // 4. Trust Score (Verification Bonus)
+    // Formula: Velocity * Complexity / Risk
+    let trustScore = 0;
+    if (partnerProfile.stats) {
+        trustScore = calculateTrustScore(partnerProfile.stats);
+        score += trustScore;
+    }
+
+    // 5. Normalization / Clamping
     if (score > 99) score = 99;
     if (score < 40) score = 40;
 
@@ -92,12 +108,13 @@ export function calculateRelevanceScore(
         matches: {
             skills: sharedSkills,
             projects: sharedProjects,
-            domains: matchedDomains
+            domains: matchingDomainProjects.map(p => PROJECT_REGISTRY[p]?.domain).filter(Boolean) as string[]
         },
         breakdown: {
             skillScore,
             projectScore,
-            domainScore
+            domainScore,
+            trustScore
         }
     };
 }

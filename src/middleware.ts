@@ -9,6 +9,10 @@ export default auth((req) => {
     const isAuthPage = req.nextUrl.pathname.startsWith('/login')
     const isPublicPage = req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/presentation')
 
+    if (req.nextUrl.pathname === '/home') {
+        return Response.redirect(new URL('/', req.nextUrl))
+    }
+
     if (isPublicPage) {
         return
     }

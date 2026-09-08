@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 const navItems = [
-    { icon: Home, label: "Home", href: "/home" },
+    { icon: Home, label: "Home", href: "/" },
     { icon: Zap, label: "Feed", href: "/feed" },
     { icon: Compass, label: "Explore", href: "/explore" },
     { icon: Briefcase, label: "Projects", href: "/projects" },

@@ -1,10 +1,15 @@
 import { useState, useMemo } from "react";
-import { Plus, Zap, ChevronDown } from "lucide-react";
+import Image from "next/image";
+import { Plus, Zap, ChevronDown, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import { calculateRelevanceScore } from "@/lib/ai/relevance";
 import { MOCK_USERS_DB } from "@/lib/data/mock";
-import { UserProfile } from "@/lib/types/schema";
+
+const GRID_BACKGROUND_STYLE = {
+    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
+    backgroundSize: '24px 24px'
+};
 
 export default function SuggestionNet() {
     const { userProfile } = useGlobalState();
@@ -34,7 +39,7 @@ export default function SuggestionNet() {
         <div className="w-full bg-zinc-900/30 border border-white/5 rounded-2xl p-6 relative">
             {/* Background Grid FX */}
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
+                style={GRID_BACKGROUND_STYLE}>
             </div>
 
             <div className="relative z-10 flex items-center justify-between mb-6">
@@ -58,8 +63,14 @@ export default function SuggestionNet() {
                         className="bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col items-center text-center group cursor-pointer transition-colors"
                     >
                         <div className="relative mb-3 group/score">
-                            <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-blue-500 to-purple-500">
-                                <img src={user.image} alt={user.name} className="w-full h-full rounded-full object-cover border-2 border-black" />
+                            <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-blue-500 to-purple-500 relative">
+                                <Image
+                                    src={user.image}
+                                    alt={user.name}
+                                    fill
+                                    className="rounded-full object-cover border-2 border-black"
+                                    unoptimized
+                                />
                             </div>
                             <div className="absolute -bottom-1 -right-1 bg-zinc-900 text-[10px] font-bold text-green-400 px-1.5 py-0.5 rounded-full border border-zinc-800 shadow-sm cursor-help">
                                 {user.relevance}
@@ -69,18 +80,26 @@ export default function SuggestionNet() {
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all z-50 pointer-events-none">
                                 <h5 className="text-xs font-bold text-white mb-2 border-b border-white/10 pb-1">Match Breakdown</h5>
                                 <div className="space-y-1 text-[10px] text-zinc-400">
-                                    <div className="flex justify-between">
-                                        <span>Skills</span>
-                                        <span className="text-green-400">+{user.breakdown.skillScore}</span>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-400">Skills Match</span>
+                                        <span className="text-blue-400 font-mono">+{user.breakdown.skillScore}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span>Projects</span>
-                                        <span className="text-blue-400">+{user.breakdown.projectScore}</span>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-400">Shared Projects</span>
+                                        <span className="text-purple-400 font-mono">+{user.breakdown.projectScore}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span>Domain</span>
-                                        <span className="text-purple-400">+{user.breakdown.domainScore}</span>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-400">Domain Density</span>
+                                        <span className="text-amber-400 font-mono">+{user.breakdown.domainScore}</span>
                                     </div>
+                                    {user.breakdown.trustScore ? (
+                                        <div className="flex justify-between items-center text-xs pt-1 mt-1 border-t border-zinc-800">
+                                            <span className="text-green-400 flex items-center gap-1">
+                                                <Shield size={10} /> Verified Trust
+                                            </span>
+                                            <span className="text-green-400 font-mono">+{user.breakdown.trustScore}</span>
+                                        </div>
+                                    ) : null}
                                     <div className="border-t border-white/10 pt-1 mt-1 flex justify-between font-bold text-white">
                                         <span>Total</span>
                                         <span>{user.scoreValue}</span>
@@ -164,6 +183,6 @@ export default function SuggestionNet() {
                     </motion.div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 }

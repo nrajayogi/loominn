@@ -1,18 +1,32 @@
 "use client";
 
-import { Target, CheckCircle2, Clock, Users, Plus, BarChart2, Settings } from "lucide-react";
+import { useState } from "react";
+import { Target, CheckCircle2, Clock, Users, Plus, BarChart2, Settings, Shield } from "lucide-react";
+import CommitModal from "@/components/projects/CommitModal";
+import { useGlobalState } from "@/context/GlobalStateContext";
+
+import { PROJECT_REGISTRY } from "@/lib/data/mock";
 
 export default function ProjectOverviewPage() {
+    const [isCommitModalOpen, setIsCommitModalOpen] = useState(false);
+    const { userProfile } = useGlobalState();
+    const projectTitle = "Loominn Rebuild";
+    const projectRoles = PROJECT_REGISTRY[projectTitle]?.roles || [];
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 relative">
             {/* Header Info */}
             <div className="flex items-center justify-between">
                 <div className="text-sm text-zinc-500">
                     Created 10 days ago • Updated 10 days ago • Uncategorized
                 </div>
                 <div className="flex gap-3">
-                    <button className="px-4 py-2 rounded-lg border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors text-sm font-medium">
-                        Bookmark
+                    <button
+                        onClick={() => setIsCommitModalOpen(true)}
+                        className="px-4 py-2 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:text-white hover:bg-purple-500/20 transition-all text-sm font-bold flex items-center gap-2"
+                    >
+                        <Shield size={16} />
+                        Commit with Orbit Score
                     </button>
                     <button className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
                         <Plus size={16} />
@@ -113,6 +127,14 @@ export default function ProjectOverviewPage() {
                     </div>
                 </div>
             </div>
+
+            <CommitModal
+                isOpen={isCommitModalOpen}
+                onClose={() => setIsCommitModalOpen(false)}
+                projectTitle={projectTitle}
+                userStats={userProfile.stats || { velocity: 0, projectsCompleted: 0, onTimeCompletion: 0, complexity: 0, risk: 1 }}
+                roles={projectRoles}
+            />
         </div>
     );
 }

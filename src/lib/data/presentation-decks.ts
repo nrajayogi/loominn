@@ -14,7 +14,7 @@ import {
     LineChart
 } from "lucide-react";
 
-export type SlideType = 'hero' | 'standard' | 'feature' | 'founders' | 'skill-score' | 'match-score';
+export type SlideType = 'hero' | 'standard' | 'feature' | 'founders' | 'skill-score' | 'match-score' | 'supply-chain';
 
 export interface SlideData {
     id: number;
@@ -301,6 +301,14 @@ export const DECK_VARIANTS: Record<string, SlideData[]> = {
             icon: Code,
             image: "Ledger",
             accent: "text-green-400"
+        },
+        {
+            id: 15,
+            title: "Supply Chain Traceability",
+            subtitle: "End-to-End Visibility",
+            tagline: "From Production to Consumption",
+            type: "supply-chain",
+            bgGradient: "from-orange-900/40 via-red-900/20 to-black"
         },
         {
             id: 16,

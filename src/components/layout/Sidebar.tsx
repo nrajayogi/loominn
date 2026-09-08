@@ -8,6 +8,7 @@ import {
     Zap,
     Compass,
     Briefcase,
+    LayoutGrid,
     Tv,
     Users,
     Bookmark,
@@ -20,10 +21,11 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 const navItems = [
-    { icon: Home, label: "Home", href: "/home" },
+    { icon: Home, label: "Home", href: "/" },
     { icon: Zap, label: "Feed", href: "/feed" },
     { icon: Compass, label: "Explore", href: "/explore" },
-    { icon: Briefcase, label: "Projects", href: "/projects" },
+    { icon: Briefcase, label: "Marketplace", href: "/projects" }, // Renamed from Projects
+    { icon: LayoutGrid, label: "My Projects", href: "/my-projects" }, // Restored legacy
     { icon: Tv, label: "Channels", href: "/channels" },
     { icon: Users, label: "Partners", href: "/network" },
     { icon: Bookmark, label: "Bookmarks", href: "/bookmarks" },

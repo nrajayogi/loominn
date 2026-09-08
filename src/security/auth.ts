@@ -23,19 +23,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             async authorize(credentials) {
                 // Mock validation for the "Test Login" requested by user
                 if (credentials.email === "test@loominn.com" && credentials.password === "password123") {
-                    // Check if user exists in DB, if not create them for the test
-                    let user = await prisma.user.findUnique({ where: { email: "test@loominn.com" } });
-                    if (!user) {
-                        user = await prisma.user.create({
-                            data: {
-                                email: "test@loominn.com",
-                                name: "Test User",
-                                image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-                                role: "user"
-                            }
-                        })
+                    try {
+                        let user = await prisma.user.findUnique({ where: { email: "test@loominn.com" } });
+                        if (!user) {
+                            user = await prisma.user.create({
+                                data: {
+                                    email: "test@loominn.com",
+                                    name: "Test User",
+                                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+                                    role: "user"
+                                }
+                            });
+                        }
+                        return user;
+                    } catch (err) {
+                        console.warn("Database unavailable during authorize, returning fallback test user:", err);
+                        return {
+                            id: "test-user-fallback",
+                            email: "test@loominn.com",
+                            name: "Test User",
+                            image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+                            role: "user"
+                        };
                     }
-                    return user;
                 }
                 return null;
             }
