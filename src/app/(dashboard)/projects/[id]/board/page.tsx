@@ -1,52 +1,300 @@
 "use client";
 
-import { Plus, MoreHorizontal } from "lucide-react";
+import { useState, use } from "react";
+import { Plus, MoreHorizontal, ChevronRight, ChevronLeft, Trash2, CheckCircle2, Clock, AlertCircle, X } from "lucide-react";
+import { useGlobalState } from "@/context/GlobalStateContext";
+import { WorkspaceTask } from "@/lib/types/schema";
 
-const COLUMNS = [
-    { id: "todo", title: "To Do", count: 0, color: "bg-zinc-800" },
-    { id: "progress", title: "In Progress", count: 0, color: "bg-blue-900/20" },
-    { id: "review", title: "In Review", count: 0, color: "bg-yellow-900/20" },
-    { id: "done", title: "Done", count: 0, color: "bg-green-900/20" },
+interface ColumnDef {
+    id: WorkspaceTask["status"];
+    title: string;
+    color: string;
+    badge: string;
+}
+
+const COLUMNS: ColumnDef[] = [
+    { id: "todo", title: "Backlog / To Do", color: "border-zinc-800", badge: "bg-zinc-800 text-zinc-300" },
+    { id: "progress", title: "In Progress", color: "border-blue-500/30", badge: "bg-blue-500/10 text-blue-400" },
+    { id: "review", title: "Peer Review", color: "border-amber-500/30", badge: "bg-amber-500/10 text-amber-400" },
+    { id: "done", title: "Verified Done", color: "border-emerald-500/30", badge: "bg-emerald-500/10 text-emerald-400" },
 ];
 
-export default function ProjectBoardPage() {
+export default function ProjectBoardPage({
+    params
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const { id: rawProjectId } = use(params);
+    const projectId = decodeURIComponent(rawProjectId);
+
+    const { workspaceTasks, addTask, moveTask, deleteTask, userProfile } = useGlobalState();
+
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [targetColumn, setTargetColumn] = useState<WorkspaceTask["status"]>("todo");
+    const [newTitle, setNewTitle] = useState("");
+    const [newDesc, setNewDesc] = useState("");
+    const [newPriority, setNewPriority] = useState<"low" | "medium" | "high">("medium");
+
+    // Filter tasks for this project
+    const projectTasks = workspaceTasks.filter(t => 
+        String(t.projectId).toLowerCase() === projectId.toLowerCase() ||
+        String(t.projectId).toLowerCase() === "loominn-rebuild"
+    );
+
+    const handleCreateTask = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newTitle.trim()) return;
+
+        addTask({
+            projectId,
+            title: newTitle.trim(),
+            description: newDesc.trim() || undefined,
+            status: targetColumn,
+            assigneeName: userProfile?.name || "Rajayogi Nandina",
+            priority: newPriority
+        });
+
+        setNewTitle("");
+        setNewDesc("");
+        setIsCreateModalOpen(false);
+    };
+
+    const getNextStatus = (curr: WorkspaceTask["status"]): WorkspaceTask["status"] | null => {
+        if (curr === "todo") return "progress";
+        if (curr === "progress") return "review";
+        if (curr === "review") return "done";
+        return null;
+    };
+
+    const getPrevStatus = (curr: WorkspaceTask["status"]): WorkspaceTask["status"] | null => {
+        if (curr === "done") return "review";
+        if (curr === "review") return "progress";
+        if (curr === "progress") return "todo";
+        return null;
+    };
+
+    const priorityColors = {
+        low: "bg-zinc-800 text-zinc-400",
+        medium: "bg-blue-500/15 text-blue-400 border border-blue-500/30",
+        high: "bg-red-500/15 text-red-400 border border-red-500/30"
+    };
+
     return (
         <div className="space-y-6">
+            {/* Board Controls */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-lg font-bold text-white">Task Board</h2>
-                    <span className="px-2 py-1 rounded-full bg-zinc-800 text-xs text-zinc-400">Offline</span>
-                    <span className="text-sm text-zinc-500">0 tasks</span>
+                <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-bold text-white">Live Kanban Board</h2>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/30">
+                        {projectTasks.length} Workspace Tasks
+                    </span>
                 </div>
-                <button className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+
+                <button 
+                    onClick={() => { setTargetColumn("todo"); setIsCreateModalOpen(true); }}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all active:scale-95"
+                >
                     <Plus size={16} />
-                    Add Task
+                    <span>Create Task</span>
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-[600px]">
-                {COLUMNS.map((col) => (
-                    <div key={col.id} className={`rounded-2xl border border-white/5 flex flex-col h-full overflow-hidden ${col.color === 'bg-zinc-800' ? 'bg-zinc-900/50' : col.color}`}>
-                        {/* Column Header */}
-                        <div className="p-4 flex items-center justify-between border-b border-white/5">
-                            <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-white">{col.title}</h3>
-                                <span className="px-2 py-0.5 rounded bg-black/20 text-xs text-zinc-400">{col.count}</span>
+            {/* Kanban Columns Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[550px]">
+                {COLUMNS.map((col) => {
+                    const tasksInCol = projectTasks.filter(t => t.status === col.id);
+
+                    return (
+                        <div 
+                            key={col.id} 
+                            className="bg-zinc-900/60 border border-white/5 rounded-2xl flex flex-col h-full overflow-hidden backdrop-blur-sm"
+                        >
+                            {/* Column Header */}
+                            <div className="p-3.5 flex items-center justify-between border-b border-white/5 bg-black/20">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-bold text-xs text-white uppercase tracking-wider">{col.title}</h3>
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${col.badge}`}>
+                                        {tasksInCol.length}
+                                    </span>
+                                </div>
+                                <button 
+                                    onClick={() => { setTargetColumn(col.id); setIsCreateModalOpen(true); }}
+                                    className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                                    title={`Add task to ${col.title}`}
+                                >
+                                    <Plus size={15} />
+                                </button>
                             </div>
-                            <button className="text-zinc-500 hover:text-white">
-                                <Plus size={16} />
+
+                            {/* Task Cards Stream */}
+                            <div className="flex-1 p-3 space-y-3 overflow-y-auto custom-scrollbar">
+                                {tasksInCol.length === 0 ? (
+                                    <div className="h-32 flex flex-col items-center justify-center text-zinc-500 gap-1.5 border border-dashed border-white/5 rounded-xl">
+                                        <p className="text-xs">No tasks in this lane</p>
+                                        <button 
+                                            onClick={() => { setTargetColumn(col.id); setIsCreateModalOpen(true); }}
+                                            className="text-[11px] text-blue-400 hover:underline"
+                                        >
+                                            + Add a task
+                                        </button>
+                                    </div>
+                                ) : (
+                                    tasksInCol.map(task => {
+                                        const prev = getPrevStatus(task.status);
+                                        const next = getNextStatus(task.status);
+
+                                        return (
+                                            <div 
+                                                key={task.id}
+                                                className="bg-zinc-950/80 border border-white/5 hover:border-white/15 p-4 rounded-xl space-y-3 transition-all shadow-md group"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-md uppercase font-mono font-semibold ${priorityColors[task.priority]}`}>
+                                                        {task.priority}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => deleteTask(task.id)}
+                                                        className="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                                        title="Delete task"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                    </button>
+                                                </div>
+
+                                                <div>
+                                                    <h4 className="text-xs font-bold text-white leading-snug">
+                                                        {task.title}
+                                                    </h4>
+                                                    {task.description && (
+                                                        <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2">
+                                                            {task.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-zinc-500">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-5 h-5 rounded-full bg-blue-600/30 text-blue-400 flex items-center justify-center font-bold text-[10px]">
+                                                            {task.assigneeName?.charAt(0) || "U"}
+                                                        </div>
+                                                        <span className="truncate max-w-[80px]">{task.assigneeName}</span>
+                                                    </div>
+
+                                                    {/* Move controls */}
+                                                    <div className="flex items-center gap-1">
+                                                        {prev && (
+                                                            <button
+                                                                onClick={() => moveTask(task.id, prev)}
+                                                                className="p-1 text-zinc-400 hover:text-white rounded bg-white/5 hover:bg-white/10"
+                                                                title="Move back"
+                                                            >
+                                                                <ChevronLeft size={13} />
+                                                            </button>
+                                                        )}
+                                                        {next && (
+                                                            <button
+                                                                onClick={() => moveTask(task.id, next)}
+                                                                className="p-1 text-zinc-400 hover:text-white rounded bg-white/5 hover:bg-white/10"
+                                                                title="Advance stage"
+                                                            >
+                                                                <ChevronRight size={13} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Create Task Modal */}
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
+                        <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                            <h3 className="text-white font-bold text-sm">Create Workspace Task</h3>
+                            <button onClick={() => setIsCreateModalOpen(false)} className="text-zinc-400 hover:text-white">
+                                <X size={18} />
                             </button>
                         </div>
 
-                        {/* Column Content */}
-                        <div className="flex-1 p-4 flex flex-col items-center justify-center text-zinc-500 gap-2">
-                            <Plus size={24} className="opacity-20" />
-                            <p className="text-sm">No tasks in {col.title.toLowerCase()}</p>
-                            <button className="text-xs text-zinc-600 hover:text-zinc-400">Add first task</button>
-                        </div>
+                        <form onSubmit={handleCreateTask} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-300">Task Title</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={newTitle}
+                                    onChange={(e) => setNewTitle(e.target.value)}
+                                    placeholder="e.g. Implement WebRTC audio handshake"
+                                    className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-300">Technical Context / Description</label>
+                                <textarea
+                                    rows={3}
+                                    value={newDesc}
+                                    onChange={(e) => setNewDesc(e.target.value)}
+                                    placeholder="Brief technical requirements or milestone deliverables..."
+                                    className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-zinc-300">Priority</label>
+                                    <select
+                                        value={newPriority}
+                                        onChange={(e) => setNewPriority(e.target.value as any)}
+                                        className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="low">Low Priority</option>
+                                        <option value="medium">Medium Priority</option>
+                                        <option value="high">High Priority</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-zinc-300">Lane Column</label>
+                                    <select
+                                        value={targetColumn}
+                                        onChange={(e) => setTargetColumn(e.target.value as any)}
+                                        className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="todo">To Do</option>
+                                        <option value="progress">In Progress</option>
+                                        <option value="review">In Review</option>
+                                        <option value="done">Done</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="pt-3 flex items-center justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCreateModalOpen(false)}
+                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 text-xs rounded-xl"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-md"
+                                >
+                                    Create Task
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

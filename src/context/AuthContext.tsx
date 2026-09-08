@@ -1,84 +1,46 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useRouter, usePathname } from "next/navigation";
-
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: "user" | "admin";
-    avatar: string; // Mock avatar
-}
+import { useSession, signIn, signOut } from "next-auth/react";
+import { createContext, useContext, ReactNode } from "react";
 
 interface AuthContextType {
-    user: User | null;
+    user: {
+        id?: string;
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+    } | null;
     isLoading: boolean;
-    login: (email: string) => Promise<void>;
+    login: (provider?: string) => Promise<void>;
     logout: () => Promise<void>;
     isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const MOCK_USER: User = {
-    id: "user-1",
-    name: "Rajayogi Nandina",
-    email: "rajayogi@loominn.com",
-    role: "user",
-    avatar: "RN" // Initials for now
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
-    const pathname = usePathname();
+    const { data: session, status } = useSession();
+    const isLoading = status === "loading";
+    const isAuthenticated = !!session?.user;
 
-    useEffect(() => {
-        // Init: Check local storage or cookie
-        const storedUser = localStorage.getItem("loominn_user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setIsLoading(false);
-    }, []);
-
-    const login = async (email: string) => {
-        setIsLoading(true);
-        console.log("Logging in", email);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        setUser(MOCK_USER);
-        localStorage.setItem("loominn_user", JSON.stringify(MOCK_USER));
-
-        setIsLoading(false);
-        router.push("/feed"); // Redirect to feed after login
+    const login = async (provider: string = "credentials") => {
+        await signIn(provider, { callbackUrl: "/feed" });
     };
 
     const logout = async () => {
-        setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        setUser(null);
-        localStorage.removeItem("loominn_user");
-
-        setIsLoading(false);
-        router.push("/login"); // Redirect to login
+        await signOut({ callbackUrl: "/login" });
     };
 
-    // Protected Route Logic (Client-side backup)
-    useEffect(() => {
-        const publicRoutes = ["/login", "/signup", "/"];
-        if (!isLoading && !user && !publicRoutes.includes(pathname)) {
-            // router.push("/login"); // Optional: strict client-side redirect
-            // Disabled for now to prevent loops during dev if middleware handles it
-        }
-    }, [user, isLoading, pathname, router]);
-
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider
+            value={{
+                user: session?.user || null,
+                isLoading,
+                login,
+                logout,
+                isAuthenticated
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
@@ -87,7 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
     const context = useContext(AuthContext);
     if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
+        // Fallback directly to useSession if outside AuthProvider
+        const { data: session, status } = useSession();
+        return {
+            user: session?.user || null,
+            isLoading: status === "loading",
+            login: async (provider: string = "credentials") => {
+                await signIn(provider, { callbackUrl: "/feed" });
+            },
+            logout: async () => {
+                await signOut({ callbackUrl: "/login" });
+            },
+            isAuthenticated: !!session?.user
+        };
     }
     return context;
 }
+

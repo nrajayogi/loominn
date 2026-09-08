@@ -96,6 +96,9 @@ export interface Post {
     likes: number;
     comments: number;
     shares: number;
+    authorRole?: string;
+    tags?: string[];
+    image?: string;
     // For Feed Integration
     projectData?: Project;
     roles?: Array<{ title: string; minScore: number }>;
@@ -105,4 +108,177 @@ export interface Post {
 
 export interface PrivacySettings {
     locationTracking: boolean;
+    allowDirectMessages?: boolean;
+    showOrbitScore?: boolean;
+    blockedUserIds?: string[];
+    mutedUserIds?: string[];
 }
+
+// --- Comments & Reactions ---
+
+export interface Comment {
+    id: string;
+    targetId: string | number;
+    authorName: string;
+    authorHandle?: string;
+    authorImage?: string;
+    content: string;
+    createdAt: string;
+    likes?: number;
+}
+
+// --- Polymorphic Feed System ---
+
+export type FeedContentType = 
+    | "post" 
+    | "perspective" 
+    | "project_opportunity" 
+    | "contribution" 
+    | "announcement";
+
+export interface BaseFeedContent {
+    id: string | number;
+    type: FeedContentType;
+    author: string;
+    authorHandle?: string;
+    authorImage?: string;
+    authorRole?: string;
+    time: string;
+    likes: number;
+    commentsCount: number;
+    tags: string[];
+    isSaved?: boolean;
+    isLiked?: boolean;
+}
+
+export interface PostFeedContent extends BaseFeedContent {
+    type: "post";
+    content: string;
+    image?: string;
+}
+
+export interface PerspectiveFeedContent extends BaseFeedContent {
+    type: "perspective";
+    perspectiveId: string;
+    title: string;
+    summary: string;
+    status: PerspectiveStatus;
+    itemsCount: number;
+    previewItem?: PerspectiveItem;
+    category?: string;
+    perspective?: Perspective;
+}
+
+export interface ProjectOpportunityFeedContent extends BaseFeedContent {
+    type: "project_opportunity";
+    projectId: string | number;
+    title: string;
+    description: string;
+    category: string;
+    difficulty: "beginner" | "intermediate" | "advanced" | "expert";
+    roles: Array<{ title: string; minScore: number; filled?: boolean }>;
+    bannerGradient?: string;
+    membersCount?: number;
+}
+
+export interface ContributionFeedContent extends BaseFeedContent {
+    type: "contribution";
+    projectId: string | number;
+    projectTitle: string;
+    contributionType: "code" | "design" | "architecture" | "milestone";
+    milestoneTitle: string;
+    summary: string;
+    scoreDelta: number;
+    verifiedBy: string;
+    evidenceUrl?: string;
+}
+
+export interface AnnouncementFeedContent extends BaseFeedContent {
+    type: "announcement";
+    title: string;
+    content: string;
+    badge?: string;
+    linkUrl?: string;
+    linkLabel?: string;
+}
+
+export type AnyFeedItem = 
+    | PostFeedContent 
+    | PerspectiveFeedContent 
+    | ProjectOpportunityFeedContent 
+    | ContributionFeedContent 
+    | AnnouncementFeedContent;
+
+// --- Network & Relationships ---
+
+export type RelationshipTier = "partner" | "colleague" | "ally";
+
+export type ConnectionStatus = 
+    | "suggested" 
+    | "request_sent" 
+    | "request_received" 
+    | "connected" 
+    | "declined" 
+    | "muted" 
+    | "blocked";
+
+export interface NetworkConnection {
+    id: string;
+    userId: string;
+    name: string;
+    handle: string;
+    role: string;
+    avatar: string;
+    tier: RelationshipTier;
+    status: ConnectionStatus;
+    orbitScore: number;
+    matchReason?: string;
+    mutualProjects?: string[];
+    connectedAt?: string;
+}
+
+// --- Project Workspaces & Applications ---
+
+export interface ProjectApplication {
+    id: string;
+    projectId: string | number;
+    projectTitle: string;
+    roleTitle: string;
+    applicantId: string;
+    applicantName: string;
+    applicantImage?: string;
+    applicantScore: number;
+    requiredScore: number;
+    motivation: string;
+    evidence?: string[];
+    status: "submitted" | "reviewing" | "accepted" | "declined";
+    submittedAt: string;
+    feedback?: string;
+}
+
+export interface WorkspaceTask {
+    id: string;
+    projectId: string | number;
+    title: string;
+    description?: string;
+    status: "todo" | "progress" | "review" | "done";
+    assigneeName?: string;
+    assigneeImage?: string;
+    priority: "low" | "medium" | "high";
+    createdAt: string;
+}
+
+export interface ContributionRecord {
+    id: string;
+    userId: string;
+    projectId: string | number;
+    projectTitle: string;
+    title: string;
+    type: "code" | "design" | "architecture" | "milestone";
+    date: string;
+    complexity: string;
+    scoreDelta: number;
+    verifiedBy: string;
+    evidenceUrl?: string;
+}
+

@@ -1,155 +1,220 @@
 "use client";
 
-import { CheckCircle2, Clock, FileText, AlertCircle, ChevronRight, Plus } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Clock, FileText, AlertCircle, ChevronRight, Plus, Shield, ArrowRight, Layers, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useGlobalState } from "@/context/GlobalStateContext";
-import { Project } from "@/lib/types/schema";
-
-const STATUS_STEPS = [
-    { id: 1, label: "Submitted", status: "completed", icon: FileText },
-    { id: 2, label: "In Review", status: "current", icon: Clock },
-    { id: 3, label: "Decision", status: "pending", icon: CheckCircle2 },
-];
+import { ProjectApplication } from "@/lib/types/schema";
 
 export default function ApplicationStatusPage() {
-    const { userProjects, approveProject } = useGlobalState();
+    const { userProjects, approveProject, applications } = useGlobalState();
+    const [activeTab, setActiveTab] = useState<"roles" | "projects">("roles");
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
+        <div className="max-w-4xl mx-auto space-y-8 pb-20 px-4 sm:px-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Application Status</h1>
-                    <p className="text-zinc-400">Track the progress of your project submissions.</p>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Application Tracker</h1>
+                    <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+                        Track role commitments, review status, and project launch approvals.
+                    </p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex items-center gap-3">
                     <Link href="/projects">
-                        <button className="text-sm text-zinc-500 hover:text-white flex items-center gap-1 h-full px-4">
-                            Back
+                        <button className="text-xs text-zinc-400 hover:text-white px-3 py-2 rounded-xl bg-zinc-900 border border-white/5 transition-colors">
+                            Explore Projects
                         </button>
                     </Link>
                     <Link href="/projects/create">
-                        <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-full transition-colors flex items-center gap-2 shadow-lg shadow-blue-900/20">
-                            <Plus size={18} /> Launch New
+                        <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors flex items-center gap-2 shadow-lg shadow-blue-900/20">
+                            <Plus size={14} /> Launch Project
                         </button>
                     </Link>
                 </div>
             </div>
 
-            {userProjects.length === 0 ? (
-                <div className="text-center py-20 bg-zinc-900/30 border border-white/5 rounded-2xl">
-                    <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6 text-zinc-500 border border-white/5">
-                        <FileText size={40} />
-                    </div>
-                    <h2 className="text-xl font-bold text-white mb-2">No Active Applications</h2>
-                    <p className="text-zinc-400 mb-8 max-w-md mx-auto">You haven't submitted any projects for review yet. Start your journey by launching a new project.</p>
-                </div>
-            ) : (
-                <div className="space-y-8">
-                    {userProjects.map((project) => (
-                        <div key={project.id} className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 relative overflow-hidden group">
-                            {/* Decorative Blur */}
-                            <div className="absolute top-0 right-0 p-32 bg-blue-600/5 blur-[100px] rounded-full pointer-events-none group-hover:bg-blue-600/10 transition-colors"></div>
+            {/* View Switcher Tabs */}
+            <div className="flex items-center gap-2 border-b border-white/10 pb-1 text-xs font-semibold">
+                <button
+                    onClick={() => setActiveTab("roles")}
+                    className={`pb-3 px-4 transition-all border-b-2 flex items-center gap-1.5 ${
+                        activeTab === "roles"
+                            ? "text-white border-blue-500"
+                            : "text-zinc-400 border-transparent hover:text-white"
+                    }`}
+                >
+                    <Shield size={14} className={activeTab === "roles" ? "text-blue-400" : ""} />
+                    <span>Role Applications ({applications.length})</span>
+                </button>
 
-                            <div className="flex flex-col md:flex-row md:items-start gap-6 mb-10 relative z-10">
-                                <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-blue-900/20 shrink-0">
-                                    {project.title.slice(0, 2).toUpperCase()}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                        <h2 className="text-2xl font-bold text-white">{project.title}</h2>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold border uppercase ${project.status === 'approved'
-                                                ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                                                : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-                                            }`}>
-                                            {project.status === 'submitted' ? 'In Review' : project.status}
+                <button
+                    onClick={() => setActiveTab("projects")}
+                    className={`pb-3 px-4 transition-all border-b-2 flex items-center gap-1.5 ${
+                        activeTab === "projects"
+                            ? "text-white border-purple-500"
+                            : "text-zinc-400 border-transparent hover:text-white"
+                    }`}
+                >
+                    <FileText size={14} className={activeTab === "projects" ? "text-purple-400" : ""} />
+                    <span>Project Submissions ({userProjects.length})</span>
+                </button>
+            </div>
+
+            {/* TAB 1: ROLE STAKING APPLICATIONS */}
+            {activeTab === "roles" && (
+                <div className="space-y-4">
+                    {applications.length === 0 ? (
+                        <div className="text-center py-20 bg-zinc-900/30 border border-white/5 rounded-2xl space-y-3">
+                            <Shield size={36} className="mx-auto text-zinc-500" />
+                            <h3 className="text-white font-bold text-sm">No Role Applications Yet</h3>
+                            <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                                Explore projects on Loominn and stake your Orbit Score or submit portfolio evidence to collaborate.
+                            </p>
+                            <Link
+                                href="/projects"
+                                className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-all"
+                            >
+                                Browse Open Roles
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {applications.map(app => (
+                                <div 
+                                    key={app.id}
+                                    className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 space-y-4 transition-all"
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                        <div>
+                                            <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest block font-semibold">
+                                                Role Staking Application
+                                            </span>
+                                            <h3 className="text-lg font-bold text-white mt-0.5">{app.roleTitle}</h3>
+                                            <p className="text-xs text-zinc-400">
+                                                Project: <Link href={`/projects/${app.projectId}`} className="text-blue-400 hover:underline">{app.projectTitle}</Link>
+                                            </p>
+                                        </div>
+
+                                        <span className={`text-xs px-3 py-1 rounded-full font-mono uppercase font-bold self-start ${
+                                            app.status === "accepted"
+                                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                                : app.status === "declined"
+                                                    ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                                                    : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                                        }`}>
+                                            {app.status}
                                         </span>
                                     </div>
-                                    <p className="text-zinc-400 max-w-xl line-clamp-2 mb-4">
-                                        {project.description}
-                                    </p>
-                                    <div className="flex items-center gap-4 text-sm text-zinc-500">
-                                        <span>{project.category}</span>
-                                        <span>•</span>
-                                        <span>{project.roles.length} Roles Defined</span>
-                                        <span>•</span>
-                                        <span>Submitted on {project.submittedAt}</span>
-                                    </div>
-                                </div>
 
-                                {/* Admin Tools per project */}
-                                {project.status === 'submitted' && (
-                                    <button
-                                        onClick={() => approveProject(project.id)}
-                                        className="bg-green-900/30 hover:bg-green-600 hover:text-white text-green-400 border border-green-500/30 text-xs font-bold px-4 py-2 rounded-lg transition-all whitespace-nowrap"
-                                    >
-                                        Simulate Approval
-                                    </button>
-                                )}
-                            </div>
+                                    {/* Application Context */}
+                                    <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
+                                        <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                                            <span>Submitted: {app.submittedAt}</span>
+                                            <span className="font-mono text-purple-300">
+                                                Score Staked: {app.applicantScore.toLocaleString()} (Threshold: {app.requiredScore.toLocaleString()})
+                                            </span>
+                                        </div>
 
-                            {/* Progress Stepper */}
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between relative">
-                                    {/* Connecting Line */}
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 -z-10"></div>
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 -z-10 transition-all duration-500"
-                                        style={{ width: project.status === 'approved' ? '100%' : '50%' }}></div>
-
-                                    {STATUS_STEPS.map((step) => {
-                                        const Icon = step.icon;
-                                        // Logic for stepper state based on project.status
-                                        let state = 'pending';
-                                        if (project.status === 'approved') {
-                                            state = 'completed'; // All steps complete
-                                        } else if (project.status === 'submitted') {
-                                            if (step.id === 1) state = 'completed';
-                                            if (step.id === 2) state = 'current';
-                                            if (step.id === 3) state = 'pending';
-                                        }
-
-                                        const isCompleted = state === 'completed';
-                                        const isCurrent = state === 'current';
-
-                                        return (
-                                            <div key={step.id} className="flex flex-col items-center gap-4 bg-background px-4">
-                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${isCompleted || (step.id === 3 && project.status === 'approved') ? 'bg-blue-600 border-blue-600 text-white' :
-                                                        isCurrent ? 'bg-zinc-900 border-blue-600 text-blue-500 scale-110 shadow-[0_0_20px_rgba(37,99,235,0.3)]' :
-                                                            'bg-zinc-900 border-zinc-800 text-zinc-600'
-                                                    }`}>
-                                                    <Icon size={20} />
-                                                </div>
-                                                <div className="text-center">
-                                                    <div className={`font-bold text-sm ${isCurrent || isCompleted ? 'text-white' : 'text-zinc-600'}`}>
-                                                        {step.label}
-                                                    </div>
-                                                    <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider">
-                                                        {step.id === 1 ? project.submittedAt : (
-                                                            project.status === 'approved' && step.id === 3 ? 'Approved' :
-                                                                state === 'current' ? 'Pending' : '-'
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Info Box - Only show for active reviews */}
-                            {project.status === 'submitted' && (
-                                <div className="mt-8 p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex gap-4 items-start">
-                                    <AlertCircle className="text-blue-500 shrink-0 mt-0.5" size={20} />
-                                    <div>
-                                        <h4 className="font-bold text-blue-400 mb-1 text-sm">Under Review</h4>
-                                        <p className="text-xs text-zinc-400">
-                                            Our admin team is currently reviewing this proposal. You will receive a notification once a decision has been made.
+                                        <p className="text-zinc-200 leading-relaxed pt-1">
+                                            &ldquo;{app.motivation}&rdquo;
                                         </p>
+
+                                        {app.feedback && (
+                                            <div className="pt-2 border-t border-white/5 text-[11px] text-zinc-300 flex items-center gap-1.5">
+                                                <Sparkles size={12} className="text-emerald-400" />
+                                                <span>Feedback from Lead: <strong>{app.feedback}</strong></span>
+                                            </div>
+                                        )}
                                     </div>
+
+                                    {/* Workspace Action */}
+                                    {app.status === "accepted" && (
+                                        <div className="pt-2 flex justify-end">
+                                            <Link
+                                                href={`/projects/${app.projectId}/board`}
+                                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-900/20"
+                                            >
+                                                <span>Enter Project Workspace</span>
+                                                <ArrowRight size={14} />
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            ))}
                         </div>
-                    ))}
+                    )}
+                </div>
+            )}
+
+            {/* TAB 2: PROJECT SUBMISSIONS */}
+            {activeTab === "projects" && (
+                <div className="space-y-4">
+                    {userProjects.length === 0 ? (
+                        <div className="text-center py-20 bg-zinc-900/30 border border-white/5 rounded-2xl">
+                            <FileText size={36} className="mx-auto text-zinc-500 mb-3" />
+                            <h3 className="text-xl font-bold text-white mb-1">No Active Project Submissions</h3>
+                            <p className="text-zinc-400 text-xs mb-6 max-w-md mx-auto">
+                                You haven&apos;t submitted any projects for review yet. Start your journey by launching a new project workspace.
+                            </p>
+                            <Link href="/projects/create">
+                                <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-6 rounded-xl transition-colors">
+                                    Launch New Project
+                                </button>
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {userProjects.map((project) => (
+                                <div key={project.id} className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
+                                    <div className="flex flex-col md:flex-row md:items-start gap-4 mb-6 relative z-10">
+                                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-blue-900/20 shrink-0">
+                                            {project.title.slice(0, 2).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-1 flex-wrap">
+                                                <h2 className="text-xl font-bold text-white">{project.title}</h2>
+                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase font-mono ${
+                                                    project.status === 'approved'
+                                                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                                        : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                                }`}>
+                                                    {project.status === 'submitted' ? 'In Review' : project.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-zinc-400 text-xs max-w-xl line-clamp-2">
+                                                {project.description}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {project.status === 'submitted' && (
+                                        <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                                            <span className="text-xs text-zinc-500">Awaiting automated validation</span>
+                                            <button 
+                                                onClick={() => approveProject(project.id)}
+                                                className="text-xs text-blue-400 hover:text-blue-300 font-semibold underline"
+                                            >
+                                                Simulate Auto-Approval
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {project.status === 'approved' && (
+                                        <div className="pt-2 border-t border-white/5 flex justify-end">
+                                            <Link
+                                                href={`/projects/${project.id}`}
+                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
+                                            >
+                                                <span>Go to Workspace</span>
+                                                <ArrowRight size={14} />
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
