@@ -20,10 +20,10 @@ import { motion } from "framer-motion";
 const navItems = [
     { icon: Home, label: "Home", href: "/" },
     { icon: Zap, label: "Feed", href: "/feed" },
-    { icon: Compass, label: "Explore", href: "/explore" },
+    { icon: Compass, label: "Discover", href: "/discover" },
     { icon: Briefcase, label: "Projects", href: "/projects" },
     { icon: Tv, label: "Channels", href: "/channels" },
-    { icon: Users, label: "Social", href: "/social" },
+    { icon: Users, label: "Network", href: "/network" },
     { icon: Bookmark, label: "Bookmarks", href: "/bookmarks" },
     { icon: Clock, label: "History", href: "/history" },
     { icon: User, label: "Profile", href: "/profile" },
@@ -66,8 +66,8 @@ export function BottomNav() {
 
                 <div className="w-px h-8 bg-white/10 mx-1" />
 
-                <Link href="/create">
-                    <button className="p-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all hover:scale-105 active:scale-95" aria-label="Create New Post">
+                <Link href="/projects/create">
+                    <button className="p-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all hover:scale-105 active:scale-95" aria-label="Create New Project">
                         <Plus size={24} strokeWidth={2.5} />
                     </button>
                 </Link>

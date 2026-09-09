@@ -465,6 +465,27 @@ const initialProjectMessages: Record<string, ProjectChannelMessage[]> = {
     ]
 };
 
+const initialProjects = [
+    {
+        id: "loominn-rebuild",
+        title: "Loominn Architecture & Orbit Mesh",
+        description: "The core collaborative platform for builders, engineers, and creators. Real-time workspace collaboration, orbit score transparent proof of work, and high-trust peer relations.",
+        category: "Systems & Network",
+        difficulty: "advanced",
+        status: "approved",
+        submittedAt: "Active Build",
+        likes: 124,
+        members: 4,
+        author: "Rajayogi Nandina",
+        roles: [
+            { title: "Distributed State Engineer", skills: ["CRDT", "WebSockets", "TypeScript"], status: "open" },
+            { title: "UI/UX Protocol Designer", skills: ["Figma", "Tailwind CSS", "Motion"], status: "filled" }
+        ],
+        color: "from-blue-600 to-purple-600",
+        initial: "L"
+    }
+];
+
 const GlobalStateContext = createContext<GlobalState | undefined>(undefined);
 
 export function GlobalStateProvider({ children }: { children: React.ReactNode }) {
@@ -477,7 +498,7 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
     const [perspectives, setPerspectives] = useState<Perspective[]>(initialPerspectives);
     const [savedPosts, setSavedPosts] = useState<number[]>([]);
     const [notifications, setNotifications] = useState<any[]>([]);
-    const [userProjects, setUserProjects] = useState<any[]>([]);
+    const [userProjects, setUserProjects] = useState<any[]>(initialProjects);
 
     // Extended Feature States
     const [comments, setComments] = useState<Comment[]>(initialComments);

@@ -1,7 +1,7 @@
 "use client";
 
-import { Share2, MoreHorizontal, Heart, Award, Image, Link as LinkIcon, MessageSquare, Camera, Sliders, Save, X, Move, Trash2, Copy, Pin } from "lucide-react";
-
+import { Share2, MoreHorizontal, Heart, Award, Image, Link as LinkIcon, MessageSquare, Camera, Sliders, Save, X, Move, Trash2, Copy, Pin, Info, HelpCircle, CheckCircle2, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import EditProfileModal from "@/components/profile/EditProfileModal";
@@ -16,23 +16,6 @@ const GRADIENT_PRESETS = [
     { id: 'midnight', name: 'Midnight', class: 'from-zinc-800 to-zinc-950' },
 ];
 
-const USER_PROJECTS = [
-    {
-        id: 1,
-        title: "I am new to this channel",
-        description: "Hello 👋 Just joined Loominn and excited to connect with everyone here! I'm a full-stack developer working on some cool AI projects.",
-        author: "Rajayogi Nandina",
-        image: "/placeholder-1.jpg",
-        votes: 24,
-        comments: 5,
-        tags: ["Introduction", "Developer"],
-        color: "from-blue-500 to-purple-600",
-        role: "Lead Developer",
-        likes: 124,
-        updated: "2 days ago"
-    }
-];
-
 export default function ProfilePage() {
     const { data: session } = useSession();
     const { userProfile, updateUserProfile, posts, addPost, deletePost, toggleLike, privacySettings, updatePrivacySettings, userProjects, toggleProjectLike } = useGlobalState();
@@ -44,6 +27,8 @@ export default function ProfilePage() {
     const [activePostMenu, setActivePostMenu] = useState<number | null>(null);
     const [isPosting, setIsPosting] = useState(false);
     const [postSuccess, setPostSuccess] = useState(false);
+    const [showOrbitExplainer, setShowOrbitExplainer] = useState(false);
+    const [pinnedNotification, setPinnedNotification] = useState<string | null>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
     const [isAdjustingCover, setIsAdjustingCover] = useState(false);
     const [tempCoverSettings, setTempCoverSettings] = useState({ hue: 0, positionY: 50, enableOverlay: true, gradient: "from-blue-600 to-purple-600" });
@@ -341,9 +326,19 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                     {/* Skill Score Card */}
                     <div className="relative z-20 bg-zinc-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm flex flex-col items-center">
-                        <div className="flex items-center gap-2 mb-4 w-full">
-                            <Award className="text-yellow-500" size={20} />
-                            <span className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Orbit Score</span>
+                        <div className="flex items-center justify-between mb-4 w-full">
+                            <div className="flex items-center gap-2">
+                                <Award className="text-yellow-500" size={20} />
+                                <span className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Orbit Score</span>
+                            </div>
+                            <button
+                                onClick={() => setShowOrbitExplainer(true)}
+                                className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 font-medium px-2 py-0.5 rounded-md bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
+                                title="Learn how your Orbit Score is calculated"
+                            >
+                                <Info size={12} />
+                                Formula
+                            </button>
                         </div>
                         {userProfile.stats ? (
                             <SkillScoreBadge stats={userProfile.stats} size="lg" expanded={true} />
@@ -399,42 +394,60 @@ export default function ProfilePage() {
 
                     {/* Projects Content */}
                     {activeTab === "Projects" && (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {USER_PROJECTS.map((project) => (
-                                <div key={project.id} className="group bg-zinc-900/30 border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all hover:bg-zinc-900/50">
-                                    <div className="h-40 bg-zinc-800 relative overflow-hidden">
-                                        <div className={`absolute inset-0 bg-gradient-to-br ${project.color} opacity-20 group-hover:opacity-30 transition-opacity`}></div>
-                                        {/* Placeholder for project image */}
-                                        <div className="absolute inset-0 flex items-center justify-center text-zinc-700">
-                                            <Image size={48} />
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {userProjects && userProjects.length > 0 ? (
+                                    userProjects.map((project: any) => (
+                                        <Link key={project.id} href={`/projects/${project.id === "loominn-rebuild" ? "loominn-rebuild" : project.id}`}>
+                                            <div className="group bg-zinc-900/40 border border-white/5 hover:border-blue-500/30 rounded-2xl overflow-hidden transition-all hover:bg-zinc-900/70 cursor-pointer h-full flex flex-col justify-between shadow-lg">
+                                                <div className={`h-36 bg-gradient-to-br ${project.color || 'from-blue-600 to-indigo-700'} relative p-5 flex flex-col justify-between`}>
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="px-2.5 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[10px] uppercase font-bold text-white tracking-wider border border-white/10">
+                                                            {project.status || 'Active Build'}
+                                                        </span>
+                                                        <div className="w-7 h-7 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                                                            <ChevronRight size={14} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-white">
+                                                        <h4 className="font-bold text-lg leading-snug drop-shadow-md">{project.title}</h4>
+                                                        <span className="text-xs text-white/80">{project.category || 'Workspace Project'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="p-5 flex-1 flex flex-col justify-between">
+                                                    <p className="text-sm text-zinc-400 line-clamp-2 mb-4 leading-relaxed">{project.description}</p>
+                                                    <div className="space-y-3 pt-3 border-t border-white/5">
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {project.roles && project.roles.map((r: any, idx: number) => (
+                                                                <span key={idx} className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 font-medium">
+                                                                    {r.title}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-xs text-zinc-500">
+                                                            <span>{project.members || 1} team members</span>
+                                                            <span className="flex items-center gap-1 text-zinc-400"><Heart size={12} className="text-pink-500 fill-pink-500" /> {project.likes || 0}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))
+                                ) : null}
+
+                                {/* Create New Project Card */}
+                                <Link href="/projects/create" className="block h-full min-h-[220px]">
+                                    <div className="h-full border-2 border-dashed border-white/10 hover:border-blue-500/40 rounded-2xl flex flex-col items-center justify-center gap-4 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/5 transition-all group p-6 cursor-pointer">
+                                        <div className="p-4 bg-zinc-900 group-hover:bg-blue-500/20 rounded-full transition-colors">
+                                            <MoreHorizontal size={24} className="text-zinc-500 group-hover:text-blue-400" />
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="font-bold block text-sm">Create New Project</span>
+                                            <span className="text-xs text-zinc-500 mt-1 block">Launch a workspace with roles, timeline & Orbit rewards</span>
                                         </div>
                                     </div>
-                                    <div className="p-5">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-white text-lg group-hover:text-blue-400 transition-colors">{project.title}</h3>
-                                            <span className="text-xs text-zinc-500 bg-white/5 px-2 py-1 rounded">{project.updated}</span>
-                                        </div>
-                                        <p className="text-sm text-zinc-400 line-clamp-2 mb-4">{project.description}</p>
-                                        <div className="flex items-center justify-between text-xs text-zinc-500">
-                                            <div className="flex gap-2">
-                                                {project.tags.map(tag => (
-                                                    <span key={tag} className="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full">{tag}</span>
-                                                ))}
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <span className="flex items-center gap-1"><Heart size={12} /> {project.likes}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {/* Create New Project Card */}
-                            <button className="h-full min-h-[250px] border-2 border-dashed border-white/5 hover:border-blue-500/30 rounded-2xl flex flex-col items-center justify-center gap-4 text-zinc-500 hover:text-blue-400 hover:bg-blue-500/5 transition-all group">
-                                <div className="p-4 bg-zinc-900 group-hover:bg-blue-500/20 rounded-full transition-colors">
-                                    <MoreHorizontal size={24} className="text-zinc-600 group-hover:text-blue-400" />
-                                </div>
-                                <span className="font-medium">Create New Project</span>
-                            </button>
+                                </Link>
+                            </div>
                         </div>
                     )}
 
@@ -598,7 +611,14 @@ export default function ProfilePage() {
                                                                 >
                                                                     <Copy size={14} /> Copy Link
                                                                 </button>
-                                                                <button className="w-full text-left px-4 py-3 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setPinnedNotification("Perspective pinned to your profile spotlight.");
+                                                                        setActivePostMenu(null);
+                                                                        setTimeout(() => setPinnedNotification(null), 3000);
+                                                                    }}
+                                                                    className="w-full text-left px-4 py-3 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2"
+                                                                >
                                                                     <Pin size={14} /> Pin to Profile
                                                                 </button>
                                                                 <div className="h-px bg-white/5 mx-2 my-1"></div>
@@ -696,6 +716,97 @@ export default function ProfilePage() {
                     )}
                 </div>
             </div>
+
+            {/* Orbit Score Transparent Formula Explainer Modal */}
+            {showOrbitExplainer && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 md:p-8 max-w-xl w-full shadow-2xl relative max-h-[85vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                    <Award size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Orbit Score Formula</h3>
+                                    <p className="text-xs text-zinc-400">Verifiable, transparent credibility on Loominn</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowOrbitExplainer(false)}
+                                className="text-zinc-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="bg-white/5 border border-white/5 rounded-xl p-4">
+                                <p className="text-xs text-zinc-300 leading-relaxed">
+                                    Orbit Score is Loominn&apos;s merit-driven credibility metric. Unlike algorithmic karma or vanity follower counts, Orbit Score is computed purely from cryptographic proof of work, peer audits, and workspace milestone delivery.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Mathematical Breakdown</h4>
+                                <div className="space-y-3">
+                                    {[
+                                        { label: "Technical Architecture & Code Delivery", weight: "25%", desc: "Merged PRs, verifiable commits, and clean CI test runs inside project workspaces." },
+                                        { label: "Proof Ledger & Evidence", weight: "25%", desc: "Cryptographically verified milestone submissions and artifact attachments." },
+                                        { label: "Peer Collaboration Audits", weight: "20%", desc: "Review endorsements and structured appraisals from Partner and Colleague tier members." },
+                                        { label: "High-Resonance Perspectives", weight: "15%", desc: "Knowledge-sharing writeups, architecture reviews, and engineering discussion resonance." },
+                                        { label: "Delivery Reliability & Uptime", weight: "15%", desc: "Sprint milestone completion punctuality and verified task fulfillment." },
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="p-3.5 rounded-xl bg-zinc-950/60 border border-white/5 flex items-start justify-between gap-4">
+                                            <div>
+                                                <span className="text-xs font-bold text-white block">{item.label}</span>
+                                                <span className="text-[11px] text-zinc-400 mt-0.5 block leading-relaxed">{item.desc}</span>
+                                            </div>
+                                            <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded border border-amber-400/20 whitespace-nowrap">
+                                                {item.weight}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-white/10">
+                                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">How to Level Up Your Score</h4>
+                                <ul className="space-y-2 text-xs text-zinc-300">
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 size={14} className="text-emerald-400 flex-shrink-0" />
+                                        <span>Apply to open roles in projects matching your domain</span>
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 size={14} className="text-emerald-400 flex-shrink-0" />
+                                        <span>Complete milestones and submit verification evidence to the Proof Ledger</span>
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 size={14} className="text-emerald-400 flex-shrink-0" />
+                                        <span>Receive peer endorsements from team members upon milestone sign-off</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
+                            <button
+                                onClick={() => setShowOrbitExplainer(false)}
+                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition-colors shadow-lg shadow-blue-600/30"
+                            >
+                                Close Explainer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Pinned Notification Toast */}
+            {pinnedNotification && (
+                <div className="fixed bottom-24 right-6 z-50 bg-zinc-900 border border-blue-500/30 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <Pin size={14} className="text-blue-400" />
+                    <span>{pinnedNotification}</span>
+                </div>
+            )}
         </div>
     );
 }

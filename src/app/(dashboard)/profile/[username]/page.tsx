@@ -3,6 +3,7 @@
 import { MapPin, Link as LinkIcon, Calendar, UserPlus, Clock, Check, MessageSquare } from "lucide-react";
 import { ProjectCard } from "@/components/ui/ProjectCard";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
     const username = params.username === "me" ? "Rajayogi" : params.username;
@@ -40,7 +41,7 @@ export default function ProfilePage({ params }: { params: { username: string } }
                             </div>
                             <div className="flex items-center gap-2">
                                 <LinkIcon size={16} />
-                                <a href="#" className="hover:text-primary transition-colors">loominn.com</a>
+                                <a href="https://loominn.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">loominn.com</a>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Calendar size={16} />
@@ -63,9 +64,11 @@ export default function ProfilePage({ params }: { params: { username: string } }
                             {connectionStatus === "pending" && <><Clock size={18} /> Pending</>}
                             {connectionStatus === "connected" && <><Check size={18} /> Connected</>}
                         </button>
-                        <button className="px-6 py-2.5 rounded-xl bg-card border border-border text-white font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
-                            <MessageSquare size={18} /> Message
-                        </button>
+                        <Link href={`/messages?user=${encodeURIComponent(username)}`}>
+                            <button className="px-6 py-2.5 rounded-xl bg-card border border-border text-white font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
+                                <MessageSquare size={18} /> Message
+                            </button>
+                        </Link>
                     </div>
                 </div>
 

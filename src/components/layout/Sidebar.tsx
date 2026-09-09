@@ -23,7 +23,7 @@ import { motion } from "framer-motion";
 const navItems = [
     { icon: Home, label: "Home", href: "/" },
     { icon: Zap, label: "Feed", href: "/feed" },
-    { icon: Compass, label: "Explore", href: "/explore" },
+    { icon: Compass, label: "Discover", href: "/discover" },
     { icon: Briefcase, label: "Marketplace", href: "/projects" }, // Renamed from Projects
     { icon: LayoutGrid, label: "My Projects", href: "/my-projects" }, // Restored legacy
     { icon: Tv, label: "Channels", href: "/channels" },
@@ -111,15 +111,17 @@ export function Sidebar() {
 
                 {/* Create Action */}
                 <div className="w-full px-4 mt-4 mb-4">
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-600/20 flex items-center justify-center gap-3 overflow-hidden group/btn relative"
-                    >
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
-                        <Plus size={24} className="relative z-10 min-w-[24px]" />
-                        <span className="relative z-10 font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Create</span>
-                    </motion.button>
+                    <Link href="/projects/create" className="block w-full">
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-600/20 flex items-center justify-center gap-3 overflow-hidden group/btn relative"
+                        >
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+                            <Plus size={24} className="relative z-10 min-w-[24px]" />
+                            <span className="relative z-10 font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Create</span>
+                        </motion.button>
+                    </Link>
                 </div>
 
                 {/* User Profile */}

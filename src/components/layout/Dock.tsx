@@ -1,15 +1,17 @@
 "use client";
 
-import { Home, LayoutGrid, Plus, User, Zap, LogOut, LogIn } from "lucide-react";
+import { Home, Compass, LayoutGrid, Plus, User, Zap, LogOut, LogIn, FileCheck, ShieldCheck, Users, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useGlobalState } from "@/context/GlobalStateContext";
+import { calculateSkillScore } from "@/lib/ai/skill-engine";
 
 const NAV_ITEMS = [
     { icon: Home, label: "Home", href: "/" },
+    { icon: Compass, label: "Discover", href: "/discover" },
     { icon: LayoutGrid, label: "Projects", href: "/projects" },
     { icon: Plus, label: "Create", href: "/projects/create", highlight: true },
     { icon: Zap, label: "Feed", href: "/feed" },
@@ -59,19 +61,41 @@ export default function Dock() {
                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-40 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl p-1 flex flex-col gap-1 z-50"
+                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-52 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-1.5 flex flex-col gap-1 z-50"
                                     >
-                                        <div className="px-3 py-2 border-b border-white/5 mb-1">
-                                            <p className="text-xs font-bold text-white truncate">{userProfile.name || session?.user?.name || "User"}</p>
-                                            <p className="text-[10px] text-zinc-500 truncate">{userProfile.bio || session?.user?.email}</p>
+                                        <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-white truncate">{userProfile.name || session?.user?.name || "Builder"}</p>
+                                                <p className="text-[10px] text-zinc-400 truncate">{userProfile.bio || session?.user?.email}</p>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 whitespace-nowrap">
+                                                {userProfile.stats ? calculateSkillScore(userProfile.stats).raw : 840} Orbit
+                                            </span>
                                         </div>
-                                        <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                            <User size={14} />
+                                        <Link href="/profile" className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                                            <User size={14} className="text-blue-400" />
                                             View Profile
                                         </Link>
+                                        <Link href="/projects/status" className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                                            <FileCheck size={14} className="text-emerald-400" />
+                                            Application Tracker
+                                        </Link>
+                                        <Link href="/history" className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                                            <ShieldCheck size={14} className="text-purple-400" />
+                                            Proof Ledger
+                                        </Link>
+                                        <Link href="/network" className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                                            <Users size={14} className="text-cyan-400" />
+                                            High-Trust Network
+                                        </Link>
+                                        <Link href="/settings" className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+                                            <Settings size={14} className="text-zinc-400" />
+                                            Settings & Privacy
+                                        </Link>
+                                        <div className="h-px bg-white/10 my-0.5 mx-1" />
                                         <button
                                             onClick={() => signOut({ callbackUrl: "/" })}
-                                            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors w-full text-left"
+                                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors w-full text-left"
                                         >
                                             <LogOut size={14} />
                                             Sign Out

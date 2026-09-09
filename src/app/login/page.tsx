@@ -11,6 +11,7 @@ const pacifico = Pacifico({ subsets: ["latin"], weight: "400" });
 
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState<string | null>(null);
+    const [policyModal, setPolicyModal] = useState<"terms" | "privacy" | null>(null);
 
     const handleLogin = async (provider: string) => {
         setIsLoading(provider);
@@ -159,10 +160,79 @@ export default function LoginPage() {
                     </form>
 
                     <p className="text-center text-xs text-zinc-600 mt-8">
-                        By continuing, you agree to Loominn's <a href="#" className="underline hover:text-zinc-400">Terms of Service</a> and <a href="#" className="underline hover:text-zinc-400">Privacy Policy</a>.
+                        By continuing, you agree to Loominn&apos;s{" "}
+                        <button
+                            type="button"
+                            onClick={() => setPolicyModal("terms")}
+                            className="underline text-zinc-400 hover:text-white transition-colors"
+                        >
+                            Terms of Service
+                        </button>{" "}
+                        and{" "}
+                        <button
+                            type="button"
+                            onClick={() => setPolicyModal("privacy")}
+                            className="underline text-zinc-400 hover:text-white transition-colors"
+                        >
+                            Privacy Policy
+                        </button>.
                     </p>
                 </motion.div>
             </div>
+
+            {/* Legal & Privacy Policy Modal */}
+            {policyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative">
+                        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                            <h3 className="text-lg font-bold text-white">
+                                {policyModal === "terms" ? "Loominn Builder Terms of Service" : "Loominn Privacy & Data Sovereignty"}
+                            </h3>
+                            <button
+                                onClick={() => setPolicyModal(null)}
+                                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/10"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className="text-sm text-zinc-300 space-y-3 max-h-[60vh] overflow-y-auto pr-2 leading-relaxed">
+                            {policyModal === "terms" ? (
+                                <>
+                                    <p>
+                                        <strong>1. Builder Credibility:</strong> Loominn is designed for real project collaboration, peer audit, and proof of work. Spamming, impersonation, and fraudulent milestone assertions violate platform trust.
+                                    </p>
+                                    <p>
+                                        <strong>2. Collaborative Intellectual Property:</strong> Workspace code, artifacts, and designs remain the property of their creators or the respective project repository licenses.
+                                    </p>
+                                    <p>
+                                        <strong>3. Respectful Orbit Network:</strong> Connections across Partner, Colleague, and Ally tiers must adhere to constructive communication standards.
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <p>
+                                        <strong>1. Zero Data Resale:</strong> Loominn never sells personal contact data, message logs, or builder credentials to ad networks.
+                                    </p>
+                                    <p>
+                                        <strong>2. Orbit Score Transparency:</strong> Your Orbit Score is computed purely from verifiable technical milestones, code contributions, and peer audits. You can configure visibility to public or verified connections only.
+                                    </p>
+                                    <p>
+                                        <strong>3. Sovereignty:</strong> You can export your proof ledger or delete your account at any time in Settings.
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
+                            <button
+                                onClick={() => setPolicyModal(null)}
+                                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-xs transition-colors"
+                            >
+                                Understood
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
