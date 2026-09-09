@@ -6,7 +6,7 @@ const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
     const isLoggedIn = !!req.auth
-    const isAuthPage = req.nextUrl.pathname.startsWith('/login')
+    const isAuthPage = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/signup')
     const isPublicPage = req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/presentation')
 
     if (req.nextUrl.pathname === '/home') {
