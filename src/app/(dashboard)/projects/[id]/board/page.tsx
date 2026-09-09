@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, use } from "react";
-import { Plus, MoreHorizontal, ChevronRight, ChevronLeft, Trash2, CheckCircle2, Clock, AlertCircle, X } from "lucide-react";
+import { 
+    Plus, MoreHorizontal, ChevronRight, ChevronLeft, Trash2, 
+    CheckCircle2, Clock, AlertCircle, X, ShieldCheck, ExternalLink, 
+    Award, Sparkles, UserCheck 
+} from "lucide-react";
+import Link from "next/link";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import { WorkspaceTask } from "@/lib/types/schema";
 
@@ -27,13 +32,27 @@ export default function ProjectBoardPage({
     const { id: rawProjectId } = use(params);
     const projectId = decodeURIComponent(rawProjectId);
 
-    const { workspaceTasks, addTask, moveTask, deleteTask, userProfile } = useGlobalState();
+    const { 
+        workspaceTasks, 
+        addTask, 
+        moveTask, 
+        deleteTask, 
+        userProfile, 
+        completeWorkspaceTask 
+    } = useGlobalState();
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [targetColumn, setTargetColumn] = useState<WorkspaceTask["status"]>("todo");
     const [newTitle, setNewTitle] = useState("");
     const [newDesc, setNewDesc] = useState("");
     const [newPriority, setNewPriority] = useState<"low" | "medium" | "high">("medium");
+
+    // Peer Verification Modal State
+    const [verifyingTask, setVerifyingTask] = useState<WorkspaceTask | null>(null);
+    const [peerReviewer, setPeerReviewer] = useState("Elena Rostova");
+    const [acknowledgement, setAcknowledgement] = useState("Verified robust implementation, automated tests pass, zero regressions.");
+    const [evidenceUrl, setEvidenceUrl] = useState("https://github.com/loominn/core/pull/104");
+    const [scoreDelta, setScoreDelta] = useState(45);
 
     // Filter tasks for this project
     const projectTasks = workspaceTasks.filter(t => 
@@ -143,15 +162,31 @@ export default function ProjectBoardPage({
                                         const prev = getPrevStatus(task.status);
                                         const next = getNextStatus(task.status);
 
+                                        const handleAdvance = () => {
+                                            if (next === "done") {
+                                                setVerifyingTask(task);
+                                            } else if (next) {
+                                                moveTask(task.id, next);
+                                            }
+                                        };
+
                                         return (
                                             <div 
                                                 key={task.id}
                                                 className="bg-zinc-950/80 border border-white/5 hover:border-white/15 p-4 rounded-xl space-y-3 transition-all shadow-md group"
                                             >
                                                 <div className="flex items-start justify-between gap-2">
-                                                    <span className={`text-[10px] px-2 py-0.5 rounded-md uppercase font-mono font-semibold ${priorityColors[task.priority]}`}>
-                                                        {task.priority}
-                                                    </span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-md uppercase font-mono font-semibold ${priorityColors[task.priority]}`}>
+                                                            {task.priority}
+                                                        </span>
+                                                        {task.status === "done" && (
+                                                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono font-bold flex items-center gap-1">
+                                                                <Award size={11} />
+                                                                +{task.scoreDelta || 35} Orbit
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <button
                                                         onClick={() => deleteTask(task.id)}
                                                         className="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
@@ -171,6 +206,43 @@ export default function ProjectBoardPage({
                                                         </p>
                                                     )}
                                                 </div>
+
+                                                {/* Verified Deliverable Metadata */}
+                                                {task.status === "done" && (
+                                                    <div className="bg-black/40 p-2.5 rounded-lg border border-emerald-500/20 space-y-1 text-[10px]">
+                                                        <div className="text-emerald-400 font-semibold flex items-center gap-1">
+                                                            <CheckCircle2 size={11} />
+                                                            <span>Audited by {task.peerReviewer || "Lead Reviewer"}</span>
+                                                        </div>
+                                                        {task.acknowledgement && (
+                                                            <p className="text-zinc-300 italic">
+                                                                &ldquo;{task.acknowledgement}&rdquo;
+                                                            </p>
+                                                        )}
+                                                        {task.evidenceUrl && (
+                                                            <a 
+                                                                href={task.evidenceUrl}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="text-blue-400 hover:underline flex items-center gap-1 pt-0.5"
+                                                            >
+                                                                <span>Proof Artifact</span>
+                                                                <ExternalLink size={10} />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Action: Verify in Review */}
+                                                {task.status === "review" && (
+                                                    <button
+                                                        onClick={() => setVerifyingTask(task)}
+                                                        className="w-full py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                                                    >
+                                                        <ShieldCheck size={13} className="text-emerald-400" />
+                                                        <span>Audit & Verify Deliverable</span>
+                                                    </button>
+                                                )}
 
                                                 <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-zinc-500">
                                                     <div className="flex items-center gap-1.5">
@@ -193,9 +265,9 @@ export default function ProjectBoardPage({
                                                         )}
                                                         {next && (
                                                             <button
-                                                                onClick={() => moveTask(task.id, next)}
+                                                                onClick={handleAdvance}
                                                                 className="p-1 text-zinc-400 hover:text-white rounded bg-white/5 hover:bg-white/10"
-                                                                title="Advance stage"
+                                                                title={next === "done" ? "Peer verify and complete" : "Advance stage"}
                                                             >
                                                                 <ChevronRight size={13} />
                                                             </button>
@@ -212,7 +284,7 @@ export default function ProjectBoardPage({
                 })}
             </div>
 
-            {/* Create Task Modal */}
+            {/* Modal 1: Create Task */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                     <div className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
@@ -289,6 +361,109 @@ export default function ProjectBoardPage({
                                     className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-md"
                                 >
                                     Create Task
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal 2: Peer Verification & Acknowledgement Modal */}
+            {verifyingTask && (
+                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+                    <div className="relative w-full max-w-lg bg-zinc-900 border border-emerald-500/30 rounded-2xl p-6 space-y-4 shadow-2xl">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                            <div>
+                                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono font-semibold">
+                                    <ShieldCheck size={14} />
+                                    <span>Peer Verification & Proof Verification</span>
+                                </div>
+                                <h3 className="text-white font-bold text-base mt-0.5">
+                                    Verify Deliverable: {verifyingTask.title}
+                                </h3>
+                            </div>
+                            <button onClick={() => setVerifyingTask(null)} className="text-zinc-400 hover:text-white">
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="p-3 bg-emerald-950/20 border border-emerald-500/20 rounded-xl text-xs text-emerald-200">
+                            Verifying this task moves it to <strong>Verified Done</strong>, updates the contributor&apos;s Orbit Credibility Score, logs an immutable record into the Proof Ledger, and announces the milestone to the project channel.
+                        </div>
+
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            completeWorkspaceTask(verifyingTask.id, {
+                                peerReviewer: peerReviewer.trim(),
+                                acknowledgement: acknowledgement.trim(),
+                                evidenceUrl: evidenceUrl.trim() || undefined,
+                                scoreDelta: Number(scoreDelta) || 45
+                            });
+                            setVerifyingTask(null);
+                        }} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-300">Auditing Peer Reviewer</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={peerReviewer}
+                                    onChange={(e) => setPeerReviewer(e.target.value)}
+                                    placeholder="Peer auditor name or handle"
+                                    className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-300">Deliverable Proof Artifact URL (PR / Commit / Preview)</label>
+                                <input
+                                    type="url"
+                                    required
+                                    value={evidenceUrl}
+                                    onChange={(e) => setEvidenceUrl(e.target.value)}
+                                    placeholder="https://github.com/org/repo/pull/123"
+                                    className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-300">Peer Acknowledgement & Technical Assessment</label>
+                                <textarea
+                                    rows={3}
+                                    required
+                                    value={acknowledgement}
+                                    onChange={(e) => setAcknowledgement(e.target.value)}
+                                    placeholder="Detailed feedback acknowledging implementation quality, test coverage, and milestone completion..."
+                                    className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-zinc-300">Orbit Score Delta Reward (+)</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min={10}
+                                    max={200}
+                                    value={scoreDelta}
+                                    onChange={(e) => setScoreDelta(Number(e.target.value))}
+                                    className="w-full p-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                                />
+                            </div>
+
+                            <div className="pt-2 flex items-center justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setVerifyingTask(null)}
+                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 text-xs rounded-xl"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-950/40 flex items-center gap-1.5"
+                                >
+                                    <ShieldCheck size={14} />
+                                    <span>Sign & Commit to Ledger</span>
                                 </button>
                             </div>
                         </form>

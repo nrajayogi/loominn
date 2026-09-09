@@ -43,8 +43,10 @@ export default function ProjectMembersPage({
     const { id: rawProjectId } = use(params);
     const projectId = decodeURIComponent(rawProjectId);
 
-    const { applications, reviewApplication } = useGlobalState();
+    const { applications, reviewApplication, projectMembers } = useGlobalState();
     const [activeTab, setActiveTab] = useState<"members" | "applicants">("members");
+
+    const activeMembers = projectMembers[projectId] || projectMembers["loominn-rebuild"] || CURRENT_MEMBERS;
 
     const projectTitle = projectId
         .split("-")
@@ -67,7 +69,7 @@ export default function ProjectMembersPage({
                 <div className="flex items-center gap-3">
                     <h2 className="text-lg font-bold text-white">Project Collaboration & Team</h2>
                     <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-mono border border-blue-500/30">
-                        {CURRENT_MEMBERS.length} Active Collaborators
+                        {activeMembers.length} Active Collaborators
                     </span>
                 </div>
 
@@ -81,7 +83,7 @@ export default function ProjectMembersPage({
                                 : "text-zinc-400 hover:text-white"
                         }`}
                     >
-                        Active Members ({CURRENT_MEMBERS.length})
+                        Active Members ({activeMembers.length})
                     </button>
 
                     <button
@@ -105,7 +107,7 @@ export default function ProjectMembersPage({
             {/* TAB 1: ACTIVE MEMBERS */}
             {activeTab === "members" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {CURRENT_MEMBERS.map(member => (
+                    {activeMembers.map(member => (
                         <div 
                             key={member.id}
                             className="bg-zinc-900/60 border border-white/5 hover:border-white/15 rounded-2xl p-5 space-y-4 transition-all"

@@ -14,7 +14,10 @@ import {
     ContributionRecord, 
     NetworkConnection, 
     RelationshipTier, 
-    ConnectionStatus 
+    ConnectionStatus,
+    ProjectMember,
+    ProjectChannelMessage,
+    DEFAULT_NEW_USER_STATS
 } from "@/lib/types/schema";
 
 interface GlobalState {
@@ -47,6 +50,7 @@ interface GlobalState {
     workspaceTasks: WorkspaceTask[];
     addTask: (task: Omit<WorkspaceTask, "id" | "createdAt">) => void;
     moveTask: (taskId: string, newStatus: WorkspaceTask["status"]) => void;
+    completeWorkspaceTask: (taskId: string, details: { peerReviewer: string; acknowledgement: string; evidenceUrl?: string; scoreDelta?: number; complexity?: string }) => void;
     deleteTask: (taskId: string) => void;
     contributions: ContributionRecord[];
     addContribution: (contribution: Omit<ContributionRecord, "id">) => void;
@@ -63,6 +67,11 @@ interface GlobalState {
     toggleFollowUser: (userId: string) => void;
     followingTopics: string[];
     toggleFollowTopic: (topicId: string) => void;
+
+    // --- Project Workspace Channels & Members ---
+    projectMessages: Record<string, ProjectChannelMessage[]>;
+    sendProjectMessage: (projectId: string, content: string, type?: "message" | "milestone_announcement") => void;
+    projectMembers: Record<string, ProjectMember[]>;
 }
 
 const defaultPrivacySettings: PrivacySettings = {
@@ -371,6 +380,91 @@ const initialConnections: NetworkConnection[] = [
     }
 ];
 
+function createUniqueId(prefix: string) {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+}
+
+const initialProjectMembers: Record<string, ProjectMember[]> = {
+    "loominn-rebuild": [
+        {
+            id: "m-1",
+            name: "Rajayogi Nandina",
+            role: "Lead Architect",
+            handle: "@rajayogi",
+            avatar: "",
+            orbitScore: 6800,
+            joinedAt: "Project Genesis",
+            tier: "partner"
+        },
+        {
+            id: "m-2",
+            name: "Pratyusha Sharma",
+            role: "Lead Product Designer",
+            handle: "@pratyu",
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80",
+            orbitScore: 4850,
+            joinedAt: "2 weeks ago",
+            tier: "partner"
+        },
+        {
+            id: "m-3",
+            name: "Siddharth Dev",
+            role: "Distributed Systems Lead",
+            handle: "@siddharth",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80",
+            orbitScore: 5120,
+            joinedAt: "1 week ago",
+            tier: "colleague"
+        }
+    ],
+    "quantum-ledger": [
+        {
+            id: "m-ql-1",
+            name: "Elena R.",
+            role: "Security Protocol Lead",
+            handle: "@elena",
+            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
+            orbitScore: 7590,
+            joinedAt: "1 month ago",
+            tier: "ally"
+        }
+    ]
+};
+
+const initialProjectMessages: Record<string, ProjectChannelMessage[]> = {
+    "loominn-rebuild": [
+        {
+            id: "pm-1",
+            projectId: "loominn-rebuild",
+            authorName: "Rajayogi Nandina",
+            authorHandle: "@rajayogi",
+            authorAvatar: "",
+            content: "Welcome to the Loominn Rebuild workspace channel. All peer reviews, milestones, and deliverables are tracked here in real-time.",
+            timestamp: "Yesterday at 4:15 PM",
+            type: "message"
+        },
+        {
+            id: "pm-2",
+            projectId: "loominn-rebuild",
+            authorName: "Pratyusha Sharma",
+            authorHandle: "@pratyu",
+            authorAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80",
+            content: "Just finalized the tokens for the role application eligibility drawer. Ready for peer review on the board.",
+            timestamp: "Today at 9:30 AM",
+            type: "message"
+        },
+        {
+            id: "pm-3",
+            projectId: "loominn-rebuild",
+            authorName: "System Auditor",
+            authorHandle: "@system",
+            content: "Milestone Verified: Decentralized State Sync & Channel Architecture (+450 Orbit Score added to Rajayogi Nandina).",
+            timestamp: "Today at 10:00 AM",
+            type: "milestone_announcement"
+        }
+    ]
+};
+
 const GlobalStateContext = createContext<GlobalState | undefined>(undefined);
 
 export function GlobalStateProvider({ children }: { children: React.ReactNode }) {
@@ -396,6 +490,8 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
     const [mutedUsers, setMutedUsers] = useState<string[]>([]);
     const [followingUsers, setFollowingUsers] = useState<string[]>(["u-pratyusha", "u-elena"]);
     const [followingTopics, setFollowingTopics] = useState<string[]>(["dist-sys", "zk-crypto", "ui-craft"]);
+    const [projectMembers, setProjectMembers] = useState<Record<string, ProjectMember[]>>(initialProjectMembers);
+    const [projectMessages, setProjectMessages] = useState<Record<string, ProjectChannelMessage[]>>(initialProjectMessages);
 
     // Hydrate from localStorage on mount (Client-side only)
     useEffect(() => {
@@ -446,6 +542,12 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
 
                 const storedTopics = localStorage.getItem("loominn_following_topics");
                 if (storedTopics) setFollowingTopics(JSON.parse(storedTopics));
+
+                const storedMembers = localStorage.getItem("loominn_project_members");
+                if (storedMembers) setProjectMembers(JSON.parse(storedMembers));
+
+                const storedMessages = localStorage.getItem("loominn_project_messages");
+                if (storedMessages) setProjectMessages(JSON.parse(storedMessages));
             } catch (e) {
                 console.error("Failed to hydrate global state:", e);
             }
@@ -512,7 +614,7 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
     };
 
     const addPerspective = (perspective: Perspective) => {
-        const newP = { ...perspective, id: perspective.id || `p-${Date.now()}` };
+        const newP = { ...perspective, id: perspective.id || createUniqueId("p") };
         const updated = [newP, ...perspectives];
         setPerspectives(updated);
         if (typeof window !== 'undefined') {
@@ -632,7 +734,7 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
     const applyToRole = (appData: Omit<ProjectApplication, "id" | "submittedAt" | "status">) => {
         const newApp: ProjectApplication = {
             ...appData,
-            id: `app-${Date.now()}`,
+            id: createUniqueId("app"),
             status: "submitted",
             submittedAt: "Just now"
         };
@@ -655,10 +757,43 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
 
         const app = applications.find(a => a.id === applicationId);
         if (app) {
+            const projKey = String(app.projectId).toLowerCase();
+            if (status === "accepted") {
+                const newMember: ProjectMember = {
+                    id: createUniqueId("m"),
+                    name: app.applicantName,
+                    role: app.roleTitle,
+                    handle: `@${app.applicantName.toLowerCase().replace(/\s+/g, '')}`,
+                    avatar: app.applicantImage || "",
+                    orbitScore: app.applicantScore,
+                    joinedAt: "Just now",
+                    tier: "partner"
+                };
+
+                setProjectMembers(prev => {
+                    const currentList = prev[projKey] || [];
+                    if (currentList.some(m => m.name === app.applicantName)) return prev;
+                    const next = {
+                        ...prev,
+                        [projKey]: [...currentList, newMember]
+                    };
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem("loominn_project_members", JSON.stringify(next));
+                    }
+                    return next;
+                });
+
+                sendProjectMessage(
+                    projKey,
+                    `👋 Welcome ${app.applicantName} to the workspace as ${app.roleTitle}! Application accepted with verified proof of work.`,
+                    "milestone_announcement"
+                );
+            }
+
             addNotification(
                 `Application ${status === 'accepted' ? 'Accepted' : 'Declined'}`, 
-                `Applicant ${app.applicantName} for ${app.roleTitle} was ${status}.`,
-                `/projects/${app.projectId}/board`
+                `Applicant ${app.applicantName} for ${app.roleTitle} was ${status}. ${feedback ? `Feedback: "${feedback}"` : ""}`,
+                status === 'accepted' ? `/projects/${app.projectId}/board` : `/projects/status`
             );
         }
     };
@@ -667,7 +802,7 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
     const addTask = (taskData: Omit<WorkspaceTask, "id" | "createdAt">) => {
         const newTask: WorkspaceTask = {
             ...taskData,
-            id: `task-${Date.now()}`,
+            id: createUniqueId("task"),
             createdAt: "Just now"
         };
         const updated = [...workspaceTasks, newTask];
@@ -691,18 +826,74 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
             const task = workspaceTasks.find(t => t.id === taskId);
             if (task) {
                 addContribution({
-                    userId: "user-current",
+                    userId: userProfile.id || "user-current",
                     projectId: task.projectId,
-                    projectTitle: "Loominn Workspace",
+                    projectTitle: String(task.projectId).split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
                     title: task.title,
                     type: "milestone",
                     date: "Today",
                     complexity: task.priority === "high" ? "Advanced" : "Intermediate",
                     scoreDelta: task.priority === "high" ? 350 : 180,
-                    verifiedBy: userProfile.name
+                    verifiedBy: userProfile.name,
+                    evidenceUrl: task.evidenceUrl,
+                    acknowledgement: task.acknowledgement || "Delivered milestone verified on board"
                 });
             }
         }
+    };
+
+    const completeWorkspaceTask = (
+        taskId: string, 
+        details: { 
+            peerReviewer: string; 
+            acknowledgement: string; 
+            evidenceUrl?: string; 
+            scoreDelta?: number; 
+            complexity?: string 
+        }
+    ) => {
+        const targetTask = workspaceTasks.find(t => t.id === taskId);
+        if (!targetTask) return;
+
+        const delta = details.scoreDelta || (targetTask.priority === "high" ? 400 : 250);
+        const comp = details.complexity || (targetTask.priority === "high" ? "Advanced" : "Intermediate");
+
+        const updatedTasks = workspaceTasks.map(t => 
+            t.id === taskId 
+                ? { 
+                    ...t, 
+                    status: "done" as const, 
+                    peerReviewer: details.peerReviewer, 
+                    acknowledgement: details.acknowledgement, 
+                    evidenceUrl: details.evidenceUrl,
+                    scoreDelta: delta
+                  } 
+                : t
+        );
+        setWorkspaceTasks(updatedTasks);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem("loominn_workspace_tasks", JSON.stringify(updatedTasks));
+        }
+
+        addContribution({
+            userId: userProfile.id || "user-current",
+            projectId: targetTask.projectId,
+            projectTitle: String(targetTask.projectId).split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+            title: targetTask.title,
+            type: "milestone",
+            date: "Today",
+            complexity: comp,
+            scoreDelta: delta,
+            verifiedBy: details.peerReviewer,
+            evidenceUrl: details.evidenceUrl,
+            acknowledgement: details.acknowledgement
+        });
+
+        sendProjectMessage(
+            String(targetTask.projectId),
+            `🎉 Milestone Verified: "${targetTask.title}" delivered by ${targetTask.assigneeName || userProfile.name}. Signed off by ${details.peerReviewer} with note: "${details.acknowledgement}" (+${delta} Orbit Score).`,
+            "milestone_announcement"
+        );
     };
 
     const deleteTask = (taskId: string) => {
@@ -713,21 +904,66 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
         }
     };
 
-    // --- Contributions Ledger ---
+    // --- Contributions Ledger & Credibility Update ---
     const addContribution = (contributionData: Omit<ContributionRecord, "id">) => {
         const newContrib: ContributionRecord = {
             ...contributionData,
-            id: `contrib-${Date.now()}`
+            id: createUniqueId("contrib")
         };
         const updated = [newContrib, ...contributions];
         setContributions(updated);
         if (typeof window !== 'undefined') {
             localStorage.setItem("loominn_contributions", JSON.stringify(updated));
         }
+
+        // Credibility Update: increment projectsCompleted, onTimeCompletion, and adjust velocity/complexity
+        setUserProfile(prev => {
+            const prevStats = prev.stats || DEFAULT_NEW_USER_STATS;
+            const updatedStats = {
+                ...prevStats,
+                projectsCompleted: prevStats.projectsCompleted + 1,
+                onTimeCompletion: prevStats.onTimeCompletion + 1,
+                velocity: Math.min(100, prevStats.velocity + 3),
+                complexity: Math.min(100, prevStats.complexity + 2)
+            };
+            const updatedProfile = {
+                ...prev,
+                stats: updatedStats
+            };
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("loominn_profile", JSON.stringify(updatedProfile));
+            }
+            return updatedProfile;
+        });
+
         addNotification(
             "Proof of Work Verified", 
-            `+${newContrib.scoreDelta} Orbit Score added for delivering "${newContrib.title}".`
+            `+${newContrib.scoreDelta} Orbit Score added for delivering "${newContrib.title}". Credibility metrics updated!`
         );
+    };
+
+    // --- Project Channel Messages ---
+    const sendProjectMessage = (projectId: string, content: string, type: "message" | "milestone_announcement" = "message") => {
+        const projKey = projectId.toLowerCase();
+        const newMsg: ProjectChannelMessage = {
+            id: createUniqueId("pm"),
+            projectId: projKey,
+            authorName: userProfile.name,
+            authorHandle: `@${userProfile.name.toLowerCase().replace(/\s+/g, '')}`,
+            authorAvatar: userProfile.image,
+            content,
+            timestamp: "Just now",
+            type
+        };
+
+        setProjectMessages(prev => {
+            const current = prev[projKey] || [];
+            const next = { ...prev, [projKey]: [...current, newMsg] };
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("loominn_project_messages", JSON.stringify(next));
+            }
+            return next;
+        });
     };
 
     // --- Network Connections ---
@@ -737,7 +973,7 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
             updateConnectionStatus(existing.id, "request_sent", tier);
         } else {
             const newConn: NetworkConnection = {
-                id: `conn-${Date.now()}`,
+                id: createUniqueId("conn"),
                 userId,
                 name: userId.replace("u-", "").replace(/^\w/, c => c.toUpperCase()),
                 handle: `@${userId.replace("u-", "")}`,
@@ -850,14 +1086,17 @@ export function GlobalStateProvider({ children }: { children: React.ReactNode })
             // Extended platform state
             comments, addComment,
             applications, applyToRole, reviewApplication,
-            workspaceTasks, addTask, moveTask, deleteTask,
+            workspaceTasks, addTask, moveTask, completeWorkspaceTask, deleteTask,
             contributions, addContribution,
             networkConnections, sendConnectionRequest, updateConnectionStatus,
             reportedItems, reportItem,
             blockedUsers, toggleBlockUser,
             mutedUsers, toggleMuteUser,
             followingUsers, toggleFollowUser,
-            followingTopics, toggleFollowTopic
+            followingTopics, toggleFollowTopic,
+
+            // Project Workspace Channels & Members
+            projectMessages, sendProjectMessage, projectMembers
         }}>
             {children}
         </GlobalStateContext.Provider>

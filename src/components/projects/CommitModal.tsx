@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Shield, Zap, Lock, AlertTriangle, Info, Send, ExternalLink, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import SkillScoreBadge from "@/components/ui/SkillScoreBadge";
 import { useGlobalState } from "@/context/GlobalStateContext";
 import { SkillStats, calculateSkillScore } from "@/lib/ai/skill-engine";
@@ -349,10 +350,17 @@ export default function CommitModal({
                                         </p>
                                     </div>
 
-                                    <div className="pt-4 w-full">
+                                    <div className="pt-4 flex items-center gap-2 w-full">
+                                        <Link
+                                            href="/projects/status"
+                                            onClick={onClose}
+                                            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-colors text-center shadow-md shadow-blue-900/30"
+                                        >
+                                            Track Application Status
+                                        </Link>
                                         <button
                                             onClick={onClose}
-                                            className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-xl transition-colors"
+                                            className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-xl transition-colors"
                                         >
                                             Done
                                         </button>

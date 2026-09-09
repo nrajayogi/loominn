@@ -5,6 +5,7 @@ export type UUID = string;
 export interface UserProfile {
     id?: UUID; // Optional for local user, required for DB records
     name: string;
+    handle?: string;
     bio: string;
     location: string;
     image: string;
@@ -266,6 +267,32 @@ export interface WorkspaceTask {
     assigneeImage?: string;
     priority: "low" | "medium" | "high";
     createdAt: string;
+    evidenceUrl?: string;
+    peerReviewer?: string;
+    acknowledgement?: string;
+    scoreDelta?: number;
+}
+
+export interface ProjectMember {
+    id: string;
+    name: string;
+    role: string;
+    handle: string;
+    avatar?: string;
+    orbitScore: number;
+    joinedAt: string;
+    tier: RelationshipTier;
+}
+
+export interface ProjectChannelMessage {
+    id: string;
+    projectId: string;
+    authorName: string;
+    authorHandle: string;
+    authorAvatar?: string;
+    content: string;
+    timestamp: string;
+    type?: "message" | "milestone_announcement";
 }
 
 export interface ContributionRecord {
@@ -280,5 +307,7 @@ export interface ContributionRecord {
     scoreDelta: number;
     verifiedBy: string;
     evidenceUrl?: string;
+    acknowledgement?: string;
 }
+
 

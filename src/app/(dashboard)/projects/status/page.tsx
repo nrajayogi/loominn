@@ -7,7 +7,7 @@ import { useGlobalState } from "@/context/GlobalStateContext";
 import { ProjectApplication } from "@/lib/types/schema";
 
 export default function ApplicationStatusPage() {
-    const { userProjects, approveProject, applications } = useGlobalState();
+    const { userProjects, approveProject, applications, reviewApplication } = useGlobalState();
     const [activeTab, setActiveTab] = useState<"roles" | "projects">("roles");
 
     return (
@@ -79,69 +79,144 @@ export default function ApplicationStatusPage() {
                             </Link>
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            {applications.map(app => (
-                                <div 
-                                    key={app.id}
-                                    className="bg-zinc-900/60 border border-white/10 rounded-2xl p-6 space-y-4 transition-all"
-                                >
-                                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                                        <div>
-                                            <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest block font-semibold">
-                                                Role Staking Application
+                        <div className="space-y-6">
+                            {applications.map(app => {
+                                const stepIndex = app.status === "accepted" 
+                                    ? 4 
+                                    : app.status === "declined" 
+                                        ? 3 
+                                        : app.status === "reviewing" 
+                                            ? 2 
+                                            : 1;
+
+                                return (
+                                    <div 
+                                        key={app.id}
+                                        className="bg-zinc-900/70 border border-white/10 rounded-2xl p-6 space-y-5 transition-all shadow-xl"
+                                    >
+                                        {/* Header */}
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest font-semibold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                                                        Role Commitment
+                                                    </span>
+                                                    <span className="text-xs text-zinc-500">•</span>
+                                                    <span className="text-xs text-zinc-400">{app.submittedAt}</span>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-white mt-1">{app.roleTitle}</h3>
+                                                <p className="text-xs text-zinc-400">
+                                                    Project: <Link href={`/projects/${app.projectId}`} className="text-blue-400 hover:underline font-medium">{app.projectTitle}</Link>
+                                                </p>
+                                            </div>
+
+                                            <span className={`text-xs px-3 py-1 rounded-full font-mono uppercase font-bold self-start ${
+                                                app.status === "accepted"
+                                                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                                                    : app.status === "declined"
+                                                        ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                                                        : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                                            }`}>
+                                                {app.status === "accepted" ? "Accepted & Onboarded" : app.status}
                                             </span>
-                                            <h3 className="text-lg font-bold text-white mt-0.5">{app.roleTitle}</h3>
-                                            <p className="text-xs text-zinc-400">
-                                                Project: <Link href={`/projects/${app.projectId}`} className="text-blue-400 hover:underline">{app.projectTitle}</Link>
+                                        </div>
+
+                                        {/* 4-Step Collaboration Progression Bar */}
+                                        <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-2">
+                                            <div className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                                                Collaboration Lifecycle Status
+                                            </div>
+                                            <div className="grid grid-cols-4 gap-2 pt-1">
+                                                <div className="space-y-1 text-center">
+                                                    <div className={`h-1.5 rounded-full ${stepIndex >= 1 ? "bg-blue-500" : "bg-zinc-800"}`} />
+                                                    <span className={`text-[10px] block ${stepIndex >= 1 ? "text-blue-400 font-semibold" : "text-zinc-500"}`}>1. Submitted</span>
+                                                </div>
+                                                <div className="space-y-1 text-center">
+                                                    <div className={`h-1.5 rounded-full ${stepIndex >= 2 ? "bg-amber-500" : "bg-zinc-800"}`} />
+                                                    <span className={`text-[10px] block ${stepIndex >= 2 ? "text-amber-400 font-semibold" : "text-zinc-500"}`}>2. Peer Review</span>
+                                                </div>
+                                                <div className="space-y-1 text-center">
+                                                    <div className={`h-1.5 rounded-full ${stepIndex >= 3 ? (app.status === "declined" ? "bg-red-500" : "bg-purple-500") : "bg-zinc-800"}`} />
+                                                    <span className={`text-[10px] block ${stepIndex >= 3 ? (app.status === "declined" ? "text-red-400 font-semibold" : "text-purple-400 font-semibold") : "text-zinc-500"}`}>
+                                                        3. {app.status === "declined" ? "Declined" : "Decision"}
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-1 text-center">
+                                                    <div className={`h-1.5 rounded-full ${stepIndex >= 4 ? "bg-emerald-500" : "bg-zinc-800"}`} />
+                                                    <span className={`text-[10px] block ${stepIndex >= 4 ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}>4. Active in Workspace</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Application Context */}
+                                        <div className="bg-black/30 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
+                                            <div className="flex items-center justify-between text-zinc-400 text-[11px] flex-wrap gap-2">
+                                                <span className="font-mono text-purple-300">
+                                                    Orbit Score Staked: {app.applicantScore.toLocaleString()} (Threshold: {app.requiredScore.toLocaleString()})
+                                                </span>
+                                                {app.evidence && app.evidence.length > 0 && (
+                                                    <span className="text-zinc-400 text-[11px]">
+                                                        Proof Evidence: {app.evidence[0]}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <p className="text-zinc-200 leading-relaxed pt-1">
+                                                &ldquo;{app.motivation}&rdquo;
                                             </p>
+
+                                            {app.feedback && (
+                                                <div className="pt-2 border-t border-white/5 text-[11px] text-zinc-300 flex items-center gap-1.5">
+                                                    <Sparkles size={12} className="text-emerald-400" />
+                                                    <span>Lead Assessment: <strong className="text-white">{app.feedback}</strong></span>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <span className={`text-xs px-3 py-1 rounded-full font-mono uppercase font-bold self-start ${
-                                            app.status === "accepted"
-                                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                                                : app.status === "declined"
-                                                    ? "bg-red-500/15 text-red-400 border border-red-500/30"
-                                                    : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                                        }`}>
-                                            {app.status}
-                                        </span>
-                                    </div>
+                                        {/* Interactive Simulation Controls (for Testing the Loop) */}
+                                        {app.status !== "accepted" && app.status !== "declined" && (
+                                            <div className="p-3 bg-blue-950/20 border border-blue-500/20 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                                <div className="text-zinc-400 text-[11px]">
+                                                    <strong className="text-white">Workspace Lead Simulation:</strong> Test the decision loop right now.
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => reviewApplication(app.id, "declined", "Role requirements were filled by an existing core contributor.")}
+                                                        className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs"
+                                                    >
+                                                        Simulate Decline
+                                                    </button>
+                                                    <button
+                                                        onClick={() => reviewApplication(app.id, "accepted", "Impressive proof portfolio and milestone history. Welcome to the core team!")}
+                                                        className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-900/30"
+                                                    >
+                                                        Simulate Lead Approval
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
 
-                                    {/* Application Context */}
-                                    <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-2 text-xs">
-                                        <div className="flex items-center justify-between text-zinc-400 text-[11px]">
-                                            <span>Submitted: {app.submittedAt}</span>
-                                            <span className="font-mono text-purple-300">
-                                                Score Staked: {app.applicantScore.toLocaleString()} (Threshold: {app.requiredScore.toLocaleString()})
-                                            </span>
-                                        </div>
-
-                                        <p className="text-zinc-200 leading-relaxed pt-1">
-                                            &ldquo;{app.motivation}&rdquo;
-                                        </p>
-
-                                        {app.feedback && (
-                                            <div className="pt-2 border-t border-white/5 text-[11px] text-zinc-300 flex items-center gap-1.5">
-                                                <Sparkles size={12} className="text-emerald-400" />
-                                                <span>Feedback from Lead: <strong>{app.feedback}</strong></span>
+                                        {/* Workspace Action Buttons for Accepted Applicants */}
+                                        {app.status === "accepted" && (
+                                            <div className="pt-2 flex flex-wrap items-center justify-end gap-3">
+                                                <Link
+                                                    href={`/projects/${app.projectId}/channel`}
+                                                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+                                                >
+                                                    <span>Open Project Channel</span>
+                                                </Link>
+                                                <Link
+                                                    href={`/projects/${app.projectId}/board`}
+                                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-900/20"
+                                                >
+                                                    <span>Enter Project Workspace</span>
+                                                    <ArrowRight size={14} />
+                                                </Link>
                                             </div>
                                         )}
                                     </div>
-
-                                    {/* Workspace Action */}
-                                    {app.status === "accepted" && (
-                                        <div className="pt-2 flex justify-end">
-                                            <Link
-                                                href={`/projects/${app.projectId}/board`}
-                                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-900/20"
-                                            >
-                                                <span>Enter Project Workspace</span>
-                                                <ArrowRight size={14} />
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
